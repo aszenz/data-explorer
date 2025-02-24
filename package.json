@@ -12,32 +12,32 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@malloydata/db-duckdb": "^0.0.235",
-    "@malloydata/malloy": "^0.0.235",
+    "@malloydata/db-duckdb": "^0.0.236",
+    "@malloydata/malloy": "^0.0.236",
     "@malloydata/query-composer": "0.0.232-dev250204012314",
-    "@malloydata/render": "^0.0.235",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router": "^7.1.5"
+    "@malloydata/render": "^0.0.236",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.2.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
+    "@eslint/js": "^9.21.0",
     "@playwright/test": "^1.50.1",
-    "@types/node": "^22.13.4",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.19.0",
+    "eslint": "^9.21.0",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-compiler": "^19.0.0-beta-30d8a17-20250209",
+    "eslint-plugin-react-compiler": "^19.0.0-beta-714736e-20250131",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
-    "globals": "^15.14.0",
+    "globals": "^16.0.0",
     "playwright": "^1.50.1",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.2",
     "typescript": "~5.7.3",
-    "typescript-eslint": "^8.18.2",
-    "vite": "^6.0.5",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.1.1",
     "vite-plugin-svgr": "^4.3.0"
   }
 }
