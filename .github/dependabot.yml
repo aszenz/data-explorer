@@ -10,11 +10,6 @@ updates:
     # Set reviewers for pull requests
     reviewers:
       - "${{github.repository_owner}}"
-    # Group all dependencies into a single PR
-    groups:
-      dependencies:
-        patterns:
-          - "*"
     # Limit to 10 open pull requests for version updates
     open-pull-requests-limit: 10
 
@@ -23,7 +18,3 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    groups:
-      actions:
-        patterns:
-          - "*"
