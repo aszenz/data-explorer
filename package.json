@@ -21,7 +21,7 @@
     "react-router": "^7.3.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
+    "@eslint/js": "^9.22.0",
     "@playwright/test": "^1.50.1",
     "@types/node": "^22.13.9",
     "@types/react": "^18.3.18",
