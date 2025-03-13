@@ -31,6 +31,12 @@ jobs:
       - name: Lint code
         run: npm run lint
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run tests on CI
+        run: npm test
+
       - name: Build website
         run: npm run build
         # For gh pages deployment, base path is repository name
@@ -82,7 +88,7 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      - name: Run tests
+      - name: Run tests on deployed site
         run: npm test
         env:
           URL: ${{ needs.deploy.outputs.page_url }}
