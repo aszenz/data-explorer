@@ -14,8 +14,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build Site
+  test:
+    name: Test Site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +37,18 @@ jobs:
       - name: Run tests on CI
         run: npm test
 
+  build:
+    name: Upload build for GH pages
+    if: github.ref == 'refs/heads/master'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
       - name: Build website
         run: npm run build
         # For gh pages deployment, base path is repository name
@@ -52,7 +64,6 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
-    if: github.ref == 'refs/heads/master'
     needs: build
 
     outputs:
