@@ -37,6 +37,13 @@ jobs:
       - name: Run tests on CI
         run: npm test
 
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-ci-report
+          path: playwright-report/
+          retention-days: 7
+
   build:
     name: Upload build for GH pages
     if: github.ref == 'refs/heads/master'
