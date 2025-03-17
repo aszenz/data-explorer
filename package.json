@@ -16,7 +16,7 @@
     "@malloydata/db-duckdb": "^0.0.235",
     "@malloydata/malloy": "^0.0.235",
     "@malloydata/query-composer": "0.0.232-dev250204012314",
-    "@malloydata/render": "^0.0.242",
+    "@malloydata/render": "^0.0.243",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router": "^7.3.0"
