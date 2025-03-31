@@ -13,7 +13,7 @@
     "start": "npm run build && http-server dist --port 3000"
   },
   "dependencies": {
-    "@malloydata/db-duckdb": "^0.0.235",
+    "@malloydata/db-duckdb": "^0.0.252",
     "@malloydata/malloy": "^0.0.235",
     "@malloydata/query-composer": "0.0.232-dev250204012314",
     "@malloydata/render": "^0.0.242",
