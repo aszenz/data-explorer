@@ -6,10 +6,7 @@ updates:
     directory: "/"
     # Check for updates every day (weekdays)
     schedule:
-      interval: "weekly"
-    # Set reviewers for pull requests
-    reviewers:
-      - "${{github.repository_owner}}"
+      interval: "monthly"
     # Limit to 10 open pull requests for version updates
     open-pull-requests-limit: 10
 
@@ -17,4 +14,4 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
