@@ -19,7 +19,7 @@
     "@malloydata/render": "^0.0.242",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router": "^7.4.0"
+    "react-router": "^7.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
