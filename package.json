@@ -24,7 +24,7 @@
   "devDependencies": {
     "@eslint/js": "^9.24.0",
     "@playwright/test": "^1.51.1",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.15.3",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
