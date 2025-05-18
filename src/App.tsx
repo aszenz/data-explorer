@@ -13,10 +13,9 @@ function App() {
   if (null === setup) {
     return <div>Loading...</div>;
   }
-  const baseUrl = import.meta.env.BASE_URL;
   return (
     <RuntimeProvider setup={setup}>
-      <HashRouter basename={baseUrl}>
+      <HashRouter>
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route path="/explorer/:source" element={<ModelExplorer />} />
