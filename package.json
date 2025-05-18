@@ -13,10 +13,11 @@
     "start": "npm run build && http-server dist --port 3000"
   },
   "dependencies": {
-    "@malloydata/db-duckdb": "^0.0.235",
-    "@malloydata/malloy": "^0.0.235",
-    "@malloydata/query-composer": "0.0.232-dev250204012314",
-    "@malloydata/render": "^0.0.257",
+    "@malloydata/db-duckdb": "^0.0.279",
+    "@malloydata/malloy": "^0.0.279",
+    "@malloydata/query-composer": "0.0.269-dev250516202739",
+    "@malloydata/malloy-explorer": "0.0.278-dev250516210719",
+    "@malloydata/render": "^0.0.279",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router": "^7.5.0"
