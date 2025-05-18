@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { HashRouter, Route, Routes } from "react-router";
 import tradingModelSource from "./models/trading.malloy?raw";
 import "./index.css";
 import Home from "./Home";
@@ -16,13 +16,13 @@ function App() {
   const baseUrl = import.meta.env.BASE_URL;
   return (
     <RuntimeProvider setup={setup}>
-      <BrowserRouter basename={baseUrl}>
+      <HashRouter basename={baseUrl}>
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route path="/explorer/:source" element={<ModelExplorer />} />
           <Route path="/explorerv2/:source" element={<ModelExplorerV2 />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </RuntimeProvider>
   );
 }
