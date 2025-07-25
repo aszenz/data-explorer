@@ -1,0 +1,8 @@
+source: test is duckdb.sql("""
+    -- generate a dummy dataset
+    select * from (values
+        (1, 'foo'),
+        (2, 'bar'),
+        (3, 'baz')
+    ) as t(id, name)
+""")

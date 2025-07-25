@@ -1,0 +1,34 @@
+source: users is duckdb.table('data/users.json')
+
+source: products is duckdb.table('data/products.jsonl')
+
+-- Explore users data
+source: users_analysis is users -> {
+  group_by: city
+  aggregate: 
+    user_count is count()
+    avg_age is age.avg()
+}
+
+-- Explore products data  
+source: products_analysis is products -> {
+  group_by: category
+  aggregate:
+    product_count is count()
+    avg_price is price.avg()
+    in_stock_count is count() { where: in_stock = true }
+}
+
+-- -- Combined analysis
+-- source: combined_analysis is products -> {
+--   group_by: 
+--     price_range is case
+--       when price < 20 then 'Low'
+--       when price < 100 then 'Medium'
+--       when price < 500 then 'High'
+--       else 'Premium'
+--     end
+--   aggregate:
+--     product_count is count()
+--     total_value is price.sum()
+-- }

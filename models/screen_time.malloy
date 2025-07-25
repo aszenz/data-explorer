@@ -1,0 +1,21 @@
+source: screen_time is duckdb.table('data/Indian_Kids_Screen_Time.csv') extend {
+    measure: avg_age is avg(Age)
+    measure: avg_daily_screen_time is avg(Avg_Daily_Screen_Time_hr)
+    view: by_gender is {
+        group_by: Gender
+        aggregate:
+            avg_daily_screen_time
+        # bar_chart
+        nest: by_region is {
+            group_by: Urban_or_Rural
+            aggregate:
+                avg_daily_screen_time
+        }
+        # bar_chart
+        nest: by_device is {
+            group_by: Primary_Device
+            aggregate:
+                avg_daily_screen_time
+        }
+    }
+}

@@ -4,13 +4,13 @@ import { RuntimeSetup } from "./types";
 import { DuckDBConnection } from "./connection";
 
 export { useRuntimeSetup, useTopValues };
-function useRuntimeSetup(modelDef: string) {
+function useRuntimeSetup(modelDef: null | string) {
   const [setup, setRuntime] = useState<RuntimeSetup | null>(null);
   const [refreshModel, setRefreshModel] = useState(false);
 
   useEffect(() => {
-    async function setup() {
-      const { runtime, model } = await setupRuntime(modelDef);
+    async function setup(_modelDef: string) {
+      const { runtime, model } = await setupRuntime(_modelDef);
       setRuntime({
         runtime,
         model,
@@ -19,7 +19,9 @@ function useRuntimeSetup(modelDef: string) {
         },
       });
     }
-    void setup();
+    if (null !== modelDef) {
+      void setup(modelDef);
+    }
   }, [modelDef, refreshModel]);
 
   return setup;
@@ -29,7 +31,6 @@ function useTopValues(
   runtime: malloy.Runtime,
   model?: malloy.ModelDef,
   source?: malloy.StructDef,
-  modelPath?: string,
 ): {
   refresh: () => void;
   topValues: malloy.SearchValueMapResult[] | undefined;
@@ -41,10 +42,10 @@ function useTopValues(
 
   useEffect(() => {
     async function getValues() {
-      setTopValues(await fetchTopValues(runtime, model, source, modelPath));
+      setTopValues(await fetchTopValues(runtime, model, source));
     }
     void getValues();
-  }, [model, modelPath, runtime, source, refresh]);
+  }, [model, runtime, source, refresh]);
 
   return {
     refresh: () => {
@@ -57,7 +58,7 @@ function useTopValues(
 async function setupRuntime(modelDef: string) {
   const conn = new DuckDBConnection("main", undefined, undefined, {
     // This is the default row limit of the connection (when no row limit is provided)
-    rowLimit: 1000,
+    rowLimit: 10,
   });
   const runtime = new malloy.SingleConnectionRuntime({ connection: conn });
   async function load() {
@@ -72,14 +73,12 @@ async function fetchTopValues(
   runtime: malloy.Runtime,
   model?: malloy.ModelDef,
   source?: malloy.StructDef,
-  modelPath?: string,
 ): Promise<malloy.SearchValueMapResult[] | undefined> {
   if (undefined === source || undefined === model) {
     return undefined;
   }
-  console.log({ modelPath });
 
   const sourceName = source.as ?? source.name;
   // Returns top 1000(by count) values from every string column in the source
-  return runtime._loadModelFromModelDef(model).searchValueMap(sourceName, 1000);
+  return runtime._loadModelFromModelDef(model).searchValueMap(sourceName, 10);
 }

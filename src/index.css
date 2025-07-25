@@ -2,6 +2,7 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  height: 98vh;
 
   /* color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -20,32 +21,9 @@
   }
 } */
 
-:root {
-  /* --malloy-composer-fontSize: 13px;
-  --malloy-composer-fontFamily: Arial, sans-serif;
-  --malloy-composer-background: #1e1e1e;
-  --malloy-composer-foreground: #eeeeee;
-
-  --malloy-composer-header-background: #333333;
-
-  --malloy-composer-code-fontSize: 13px;
-  --malloy-composer-code-fontFamily: Courier, monospace;
-
-  --malloy-composer-form-background: #000000;
-  --malloy-composer-form-foreground: #eeeeee;
-  --malloy-composer-form-border: #ececed;
-  --malloy-composer-form-fontFamily: Arial, sans-serif;
-  --malloy-composer-form-fontSize: 13px;
-  --malloy-composer-form-focus: #b0b0ff;
-  --malloy-composer-form-focusBackground: #5050ff;
-  --malloy-composer-form-fontSize: 13px;
-
-  --malloy-composer-menu-background: #000000;
-  --malloy-composer-menu-foreground: #eeeeee;
-  --malloy-composer-menu-border: #bbbbbb;
-  --malloy-composer-menu-title: #bbbbbb;
-  --malloy-composer-menu-fontFamily: Courier, monospace;
-  --malloy-composer-menu-fontSize: 13px; */
+body,
+#root {
+  height: 100%;
 }
 
 .schema {
@@ -135,4 +113,29 @@
   .chevron {
     color: var(--vscode-icon-foreground);
   }
+}
+
+.tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5em;
+  gap: 1rem;
+
+  li {
+    list-style: none;
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid black;
+  }
+  li.active {
+    background-color: aqua;
+  }
+}
+.columns {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: baseline;
 }

@@ -1,0 +1,13 @@
+source: invoices is duckdb.table('data/invoices.parquet') extend {
+    measure: total_tax_amount is tax_amount.sum()
+    measure: total_net_amount is total_amount.sum()
+    measure: invoice_count is count()
+    view: by_status is {
+        group_by: status
+        aggregate:
+            invoice_count
+            total_net_amount
+            total_tax_amount
+    }
+}
+query: `All invoices` is invoices -> {select: *}

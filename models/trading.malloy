@@ -1,4 +1,4 @@
-source: orders is duckdb.table('orders') extend {
+source: orders is duckdb.table('data/orders.csv') extend {
     measure: total_revenue is sum(price * quantity)
     measure: avg_order_value is avg(price * quantity)
     measure: no_of_orders is count(order_id)
@@ -30,6 +30,24 @@ source: orders is duckdb.table('orders') extend {
             total_revenue
     }
 }
-source: contracts is duckdb.table('contracts') extend {
+source: contracts is duckdb.table('data/contracts.csv') extend {
 
+}
+
+query: price_summary is orders -> {
+    select:
+        price
+}
+
+run: orders -> {
+    select:
+        order_id,
+        product_name,
+        price,
+        quantity,
+        customer_country
+    where:
+        price > 100
+    order_by:
+        price desc
 }

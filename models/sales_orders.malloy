@@ -1,0 +1,38 @@
+source: sales_orders is duckdb.table('data/sales_orders.xlsx') extend {
+    measure: total_amount is `Total`.sum()
+    measure: no_of_units is `Units`.sum()
+    measure: avg_unit_cost is `Unit Cost`.avg()
+
+    view: by_item is {
+        group_by: `Item`
+        aggregate: total_amount, no_of_units, avg_unit_cost
+    }
+    view: by_rep is {
+        group_by: `Rep`
+        aggregate: total_amount, no_of_units, avg_unit_cost
+    }
+
+    view: by_region is {
+        group_by: `Region`
+        aggregate: total_amount, no_of_units, avg_unit_cost
+    }
+
+    view: by_month is {
+        group_by: OrderDate.month
+        aggregate: total_amount, no_of_units, avg_unit_cost
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate: total_amount, no_of_units, avg_unit_cost
+        nest: 
+            # bar_chart
+            by_item, 
+            # bar_chart
+            by_rep, 
+            # bar_chart
+            by_region, 
+            # bar_chart
+            by_month
+    }
+}

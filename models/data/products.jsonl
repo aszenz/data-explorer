@@ -1,0 +1,5 @@
+{"id": 1, "product": "Laptop", "price": 999.99, "category": "Electronics", "in_stock": true}
+{"id": 2, "product": "Smartphone", "price": 599.99, "category": "Electronics", "in_stock": false}
+{"id": 3, "product": "Coffee Mug", "price": 12.99, "category": "Home", "in_stock": true}
+{"id": 4, "product": "Desk Chair", "price": 249.99, "category": "Furniture", "in_stock": true}
+{"id": 5, "product": "Notebook", "price": 5.99, "category": "Office", "in_stock": true}
