@@ -18,7 +18,7 @@
     "@malloydata/malloy": "^0.0.298",
     "@malloydata/malloy-explorer": "^0.0.295-dev250710213205",
     "@malloydata/malloy-interfaces": "^0.0.298",
-    "@malloydata/malloy-query-builder": "^0.0.298",
+    "@malloydata/malloy-query-builder": "^0.0.299",
     "@malloydata/render": "^0.0.299",
     "react": "^19.1.0",
     "react-dom": "^19.1.1",
