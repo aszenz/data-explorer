@@ -47,7 +47,7 @@ function fieldType(field: Field): FieldType {
     }
   } else {
     return field.isAtomicField()
-      ? (field.type.toString() as keyof typeof AtomicFieldType)
+      ? (field.type as unknown as keyof typeof AtomicFieldType)
       : "query";
   }
 }
@@ -117,7 +117,7 @@ function isFieldHidden(field: Field): boolean {
     hidden = { strings, pattern };
     hiddenFields.set(field.parentExplore, hidden);
   }
-  return !!(hidden.pattern?.test(name) || hidden.strings.includes(name));
+  return hidden.pattern?.test(name) || hidden.strings.includes(name);
 }
 
 /**

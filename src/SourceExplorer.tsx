@@ -34,7 +34,9 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
   );
   const sourceDef = getSourceDef(modelDef, source.name);
   const { topValues } = useTopValues(runtime, modelDef, sourceDef);
-  const [draftQuery, setDraftQuery] = useState<MalloyInterface.Query>();
+  const [draftQuery, setDraftQuery] = useState<
+    string | MalloyInterface.Query
+  >();
   const [executionState, setExecutionState] =
     useState<QueryExecutionState>("finished");
   const [queryResolutionStartMillis, setQueryResolutionStartMillis] =
