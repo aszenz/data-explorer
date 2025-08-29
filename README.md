@@ -4,6 +4,10 @@ Explore semantic data models written in malloy.
 
 A static site for sharing data explorations.
 
+## Demo Examples
+
+- [Trading Model](https://aszenz.github.io/data-explorer/#/model/trading)
+
 ## Publishing your own Malloy models
 
 1. Clone the repo
