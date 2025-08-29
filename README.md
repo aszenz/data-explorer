@@ -2,7 +2,16 @@
 
 Explore semantic data models written in malloy.
 
-## Using
+A static site for sharing data explorations.
+
+## Publishing your own Malloy models
+
+1. Clone the repo
+2. Look at `models` directory, it contains example models and data files, you can add your own models and data here.
+3. Run `npm run start` to build and run the site.
+4. Copy `dist` folder to any static web hosting like GH Pages.
+
+## Using these awesome technologies
 
 - [Malloy Language](https://github.com/malloydata/malloy)
 - [Malloy Explorer](https://github.com/malloydata/malloy-explorer)
