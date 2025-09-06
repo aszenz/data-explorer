@@ -11,17 +11,17 @@ Try exploring these models:
 - [Sales Orders](https://aszenz.github.io/data-explorer/#/model/sales_orders)
 
 On opening, a schema page is shown with views, dimensions and
-measures associated with the model sources. 
+measures associated with the model sources.
 
 Clicking on any schema item
-opens up Malloy Explorer 
-with a pre-defined query to see 
+opens up Malloy Explorer
+with a pre-defined query to see
 the data for that item.
 
-All interactions within the 
-explorer are saved to the url so 
-sharing a particular query/view 
-of the model is as easy as 
+All interactions within the
+explorer are saved to the url so
+sharing a particular query/view
+of the model is as easy as
 sharing a link.
 
 ## Publishing your own Malloy models
