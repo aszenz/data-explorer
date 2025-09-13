@@ -12,7 +12,7 @@ import {
   getTypeLabel,
   isFieldAggregate,
   isFieldHidden,
-} from "./schema";
+} from "./schema-utils";
 import ArrayIcon from "../img/data-type-array.svg?react";
 import BooleanIcon from "../img/boolean.svg?react";
 import ChevronRightIcon from "../img/chevron_right.svg?react";

@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router";
-import { quoteIfNecessary, SchemaRenderer } from "./schema";
+import { quoteIfNecessary } from "./schema-utils";
 import { useRuntime } from "./contexts";
+import { SchemaRenderer } from "./Schema";
 
 export default ModelHome;
 
