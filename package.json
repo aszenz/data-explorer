@@ -9,8 +9,8 @@
     "lint": "prettier --check . && tsc --noEmit && eslint .",
     "format": "prettier --write .",
     "test": "playwright test",
-    "preview": "vite preview",
-    "start": "npm run build && http-server dist --port 3000"
+    "preview": "vite preview --port 3000",
+    "start": "npm run build && npm run preview"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "1.30.0",
@@ -37,7 +37,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
-    "http-server": "^14.1.1",
     "playwright": "^1.55.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",

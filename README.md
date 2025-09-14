@@ -26,10 +26,15 @@ sharing a link.
 
 ## Publishing your own Malloy models
 
-1. Clone the repo
+1. Clone the repo `git clone https://github.com/aszenz/data-explorer.git`
 2. Look at the `models` directory, it contains example models and data files like [trading model](https://github.com/aszenz/data-explorer/blob/master/models%2Ftrading.malloy) which uses data from two csv files [orders](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/orders.csv) and [contracts](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/contracts.csv), you can add your own models and their data files here.
-3. Run `npm run start` to build and run the site.
-4. Copy `dist` folder to any static web hosting like GH Pages.
+3. Run `npm run start` to build and run the site on `http://localhost:3000`.
+4. Copy `dist` folder to any static web hosting like GH Pages or serve using any http server
+
+> [!WARNING]
+> The generated `dist/index.html` file cannot be opened directly in the browser using the `file://` protocol. You must serve it through a local web server. Navigate to the `dist` directory and run one of these commands:
+> - `python -m http.server 8000` (then visit http://localhost:8000)
+> - `npx serve -s . -p 8000` (then visit http://localhost:8000)
 
 ## Using these awesome technologies
 
