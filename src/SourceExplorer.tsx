@@ -25,6 +25,8 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const querySrcParam = searchParams.get("query");
   const runParam = searchParams.get("run");
+  const expandedQueryPanelParam = searchParams.get("showQueryPanel");
+  const expandedSourcePanelParam = searchParams.get("showSourcePanel");
   const { model, runtime, refreshModel } = useRuntime();
   const { _modelDef: modelDef } = model;
   const source = React.useMemo(
@@ -179,7 +181,7 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
           }}
         >
           <ResizableCollapsiblePanel
-            isInitiallyExpanded={true}
+            isInitiallyExpanded={"true" === expandedSourcePanelParam}
             initialWidth={280}
             minWidth={180}
             icon="database"
@@ -192,9 +194,9 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
             />
           </ResizableCollapsiblePanel>
           <ResizableCollapsiblePanel
-            isInitiallyExpanded={true}
-            initialWidth={360}
-            minWidth={280}
+            isInitiallyExpanded={"true" === expandedQueryPanelParam}
+            initialWidth={320}
+            minWidth={320}
             icon="filterSliders"
             title="Query"
           >

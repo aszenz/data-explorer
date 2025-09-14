@@ -13,7 +13,7 @@ function ModelExplorer() {
     throw new Error("Source name is required");
   }
   return (
-    <div style={{ height: "90%" }}>
+    <div className="model-explorer" style={{ height: "90%" }}>
       <div className="columns">
         <h2>{modelName}</h2>
         <ul className="tabs">
