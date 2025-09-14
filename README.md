@@ -33,6 +33,7 @@ sharing a link.
 
 > [!WARNING]
 > The generated `dist/index.html` file cannot be opened directly in the browser using the `file://` protocol. You must serve it through a local web server. Navigate to the `dist` directory and run one of these commands:
+>
 > - `python -m http.server 8000` (then visit http://localhost:8000)
 > - `npx serve -s . -p 8000` (then visit http://localhost:8000)
 
