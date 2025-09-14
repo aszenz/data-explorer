@@ -23,7 +23,6 @@ export default SourceExplorer;
 
 function SourceExplorer({ sourceName }: { sourceName: string }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const queryNameParam = searchParams.get("name");
   const querySrcParam = searchParams.get("query");
   const runParam = searchParams.get("run");
   const { model, runtime, refreshModel } = useRuntime();
@@ -45,27 +44,15 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
   const [response, setResponse] = useState<QueryResponse>();
 
   const executedQuery = React.useMemo(() => {
-    if (queryNameParam) {
-      const view = findView(source, queryNameParam);
-      if (view) {
-        return {
-          definition: {
-            kind: "arrow",
-            source: {
-              kind: "source_reference",
-              name: source.name,
-            },
-            view: {
-              kind: "view_reference",
-              name: queryNameParam,
-            },
-          },
-        } satisfies MalloyInterface.Query;
-      }
-    } else if (querySrcParam) {
+    if (querySrcParam) {
       const { query, logs } = malloy.malloyToQuery(querySrcParam);
       if (query) {
-        return query;
+        // Apply Manual fix for top-level annotations
+        fixMalloyQueryAnnotations(querySrcParam, query);
+        return {
+          queryObj: query,
+          queryString: new QueryBuilder.ASTQuery({ source, query }).toMalloy(),
+        };
       }
       console.error(
         `Failed to parse query from source: ${querySrcParam}`,
@@ -73,14 +60,14 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
       );
     }
     return undefined;
-  }, [queryNameParam, querySrcParam, source]);
+  }, [querySrcParam, source]);
 
   const submittedQuery = React.useMemo(
     () =>
       executedQuery === undefined || queryResolutionStartMillis === undefined
         ? undefined
         : ({
-            query: executedQuery,
+            query: executedQuery.queryObj,
             executionState,
             queryResolutionStartMillis,
             response,
@@ -90,26 +77,13 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
   );
 
   const updateQueryInUrl = React.useCallback(
-    ({
-      run,
-      query: newQuery,
-      queryName,
-    }: {
-      run: boolean;
-      query: string | undefined;
-      queryName: string | undefined;
-    }) => {
+    ({ run, query: newQuery }: { run: boolean; query: string | undefined }) => {
       const newSearchParams = new URLSearchParams(searchParams);
 
-      if (newQuery === undefined && queryName === undefined) {
-        newSearchParams.delete("query");
-        newSearchParams.delete("name");
-      } else if (queryName) {
-        newSearchParams.set("name", queryName);
+      if (newQuery === undefined) {
         newSearchParams.delete("query");
       } else if (newQuery) {
         newSearchParams.set("query", newQuery);
-        newSearchParams.delete("name");
       }
 
       if (run) {
@@ -132,12 +106,10 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
       query: MalloyInterface.Query,
     ): void => {
       // Update URL with the query being run
-      const queryName = getQueryName(query);
-      const queryString = queryToMalloyString(source, query);
+      const queryString = queryToMalloyString(query);
       updateQueryInUrl({
         run: true,
         query: queryString,
-        queryName,
       });
     },
     [source, updateQueryInUrl],
@@ -149,18 +121,21 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
       return;
     }
     if (runParam !== "true") {
-      setDraftQuery(executedQuery);
+      setDraftQuery(executedQuery.queryObj);
       return;
     }
 
-    setDraftQuery(executedQuery);
+    setDraftQuery(executedQuery.queryObj);
     setQueryResolutionStartMillis(Date.now());
     setExecutionState("running");
 
     const executeQuery = async () => {
       try {
-        const qb = new QueryBuilder.ASTQuery({ source, query: executedQuery });
-        const result = await executeMalloyQuery(runtime, qb.toMalloy(), model);
+        const result = await executeMalloyQuery(
+          runtime,
+          executedQuery.queryString,
+          model,
+        );
         setResponse({ result });
       } catch (error) {
         console.info(error);
@@ -294,43 +269,42 @@ function findSource(
   );
 }
 
-function findView(
-  source: MalloyInterface.SourceInfo,
-  name: string,
-): MalloyInterface.FieldInfo | undefined {
-  return source.schema.fields.find(
-    (entry) => entry.name === name && entry.kind === "view",
-  );
-}
-
-function getQueryName(query: MalloyInterface.Query): string | undefined {
-  if (
-    query.definition.kind === "arrow" &&
-    query.definition.view.kind === "view_reference"
-  ) {
-    return query.definition.view.name;
-  }
-  return undefined;
-}
-
-function queryToMalloyString(
-  source: MalloyInterface.SourceInfo,
-  query: MalloyInterface.Query,
-): string | undefined {
+function queryToMalloyString(query: MalloyInterface.Query): string | undefined {
   try {
-    if (
-      query.definition.kind === "arrow" &&
-      query.definition.view.kind === "view_reference"
-    ) {
-      // For view references, return the view name to use as 'name' param
-      return undefined;
-    }
-
-    // For other query types, convert to Malloy string
-    const qb = new QueryBuilder.ASTQuery({ source, query });
-    return qb.toMalloy();
+    return MalloyInterface.queryToMalloy(query);
   } catch (error) {
     console.warn("Failed to convert query to Malloy string:", error);
     return undefined;
   }
+}
+
+/**
+ * Temp function to fix a bug upstream in malloyToQuery
+ */
+function fixMalloyQueryAnnotations(
+  queryString: string,
+  malloyQuery: MalloyInterface.Query,
+) {
+  if (
+    undefined === malloyQuery.annotations ||
+    0 === malloyQuery.annotations.length
+  ) {
+    // Match annotations at the beginning of the string (before any run statement)
+    const beforeRunMatch = queryString.match(/^((?:#[^\r\n]*[\r\n]*)*)/m);
+
+    if (null !== beforeRunMatch && beforeRunMatch[1]) {
+      const annotationLines = beforeRunMatch[1]
+        .split(/[\r\n]+/)
+        .filter((line) => line.trim().startsWith("#"))
+        .map((line) => line.trim())
+        .filter((line) => line.length > 1); // Ensure it's not just "#"
+
+      if (annotationLines.length > 0) {
+        malloyQuery.annotations = annotationLines.map((line) => ({
+          value: line,
+        }));
+      }
+    }
+  }
+  return malloyQuery;
 }

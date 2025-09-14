@@ -39,9 +39,7 @@ function ModelHome() {
           if ("parentExplore" in query) {
             const source = query.parentExplore.name;
             const queryString = `run: ${quoteIfNecessary(source)}->${quoteIfNecessary(query.name)}`;
-            void navigate(
-              `explorer/${source}?query=${queryString}&name=${query.name}&run=true`,
-            );
+            void navigate(`explorer/${source}?query=${queryString}&run=true`);
           } else {
             void navigate(`query/${query.name}`);
           }
