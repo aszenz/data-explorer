@@ -3,7 +3,7 @@ import * as malloy from "@malloydata/malloy";
 import { RuntimeSetup } from "./types";
 import { DuckDBConnection } from "./connection";
 
-export { useRuntimeSetup, useTopValues };
+export { useRuntimeSetup, useTopValues, setupRuntime };
 function useRuntimeSetup(modelDef: null | string) {
   const [setup, setRuntime] = useState<RuntimeSetup | null>(null);
   const [refreshModel, setRefreshModel] = useState(false);

@@ -145,3 +145,8 @@ body,
     margin: 0;
   }
 }
+
+.malloy-result-display {
+  height: 300px;
+  overflow: auto;
+}

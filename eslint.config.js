@@ -37,5 +37,13 @@ export default tseslint.config({
       { allowConstantExport: true },
     ],
     ...reactCompiler.configs.recommended.rules,
+    "no-unused-vars": [
+      "warn",
+      { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+    ],
   },
 });

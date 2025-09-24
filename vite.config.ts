@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
@@ -14,5 +15,8 @@ export default defineConfig({
     esbuildOptions: {
       target: "esnext",
     },
+  },
+  test: {
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
   },
 });

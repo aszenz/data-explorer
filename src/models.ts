@@ -1,4 +1,4 @@
-export { getModels, getModelCode, getDataset };
+export { getModels, getModelCode, getNotebooks, getNotebookCode, getDataset };
 
 export type { SupportedFileType };
 type SupportedFileType =
@@ -10,6 +10,12 @@ type SupportedFileType =
   | "xlsx";
 
 const modelsCode = import.meta.glob("/models/*.malloy", {
+  query: "?raw",
+  eager: true,
+  import: "default",
+});
+
+const notebooksCode = import.meta.glob("/models/*.malloynb", {
   query: "?raw",
   eager: true,
   import: "default",
@@ -50,6 +56,19 @@ function getDatasources(): Record<string, string> {
   return datasources;
 }
 
+function getNotebooks(): Record<string, string> {
+  const notebooks = Object.keys(notebooksCode).reduce<Record<string, string>>(
+    (acc, notebookPath) => {
+      const notebookName = pathToName(notebookPath);
+      acc[notebookName] = notebookPath;
+      return acc;
+    },
+    {},
+  );
+  console.log({ notebooks });
+  return notebooks;
+}
+
 function getModelCode(modelName: string): null | string {
   const models = getModels();
   const modelPath = models[modelName];
@@ -68,6 +87,28 @@ function getModelCode(modelName: string): null | string {
     }
   } else {
     console.error(`Model not found: ${modelName}`);
+    return null;
+  }
+}
+
+function getNotebookCode(notebookName: string): null | string {
+  const notebooks = getNotebooks();
+  const notebookPath = notebooks[notebookName];
+  if (notebookPath in notebooksCode) {
+    try {
+      console.log(`Loading notebook: ${notebookName}`);
+      console.log({ notebooksCode });
+      const code = notebooksCode[notebookPath];
+      if (typeof code === "string") {
+        return code;
+      }
+      throw new Error("Unknown notebook type");
+    } catch (error: unknown) {
+      console.error(`Failed to load notebook: ${notebookName}`, error);
+      return null;
+    }
+  } else {
+    console.error(`Notebook not found: ${notebookName}`);
     return null;
   }
 }
@@ -121,5 +162,8 @@ function getFileType(datasetPath: string): SupportedFileType | null {
   return extension as SupportedFileType;
 }
 function pathToName(modelPath: string): string {
-  return modelPath.replace("/models/", "").replace(".malloy", "");
+  return modelPath
+    .replace("/models/", "")
+    .replace(".malloynb", "")
+    .replace(".malloy", "");
 }
