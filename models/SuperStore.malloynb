@@ -1,0 +1,22 @@
+>>>markdown
+# Super store overview
+
+Popularized by Tableau, the superstore dataset is a common demo dataset for analytics and visualization tools. It contains sales data for a fictional retail store, including information about orders, customers, products, and shipping.
+
+This notebook provides an overview of the superstore dataset, including key metrics and visualizations using Malloy.
+>>>markdown
+## 1. Previewing the Data
+>>>malloy
+import {superstore} from './superstore.malloy'
+
+run: superstore -> {
+    select: *
+    limit: 20
+}
+>>>markdown
+## 2. Analyzing Sales by Segment, Category and Sub-Category
+>>>malloy
+# dashboard
+run: superstore -> `By Category`
+>>>malloy
+

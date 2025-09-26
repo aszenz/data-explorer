@@ -12,11 +12,11 @@ export { executeNotebook };
 async function executeNotebook(
   notebook: ParsedNotebook,
 ): Promise<NotebookOutput> {
-  const malloyModel = parseModel(
+  const notebookModel = parseModel(
     notebook.cells.filter((cell) => cell.type === "malloy"),
   );
-  console.log("Malloy Model to execute:", malloyModel);
-  const { model, runtime } = await setupRuntime(malloyModel);
+  console.log("Malloy Model to execute:", notebookModel);
+  const { model, runtime } = await setupRuntime(notebookModel);
   const cellOutputs: CellOutput[] = await Promise.all(
     notebook.cells.map(async (cell) => {
       switch (cell.type) {
@@ -24,10 +24,16 @@ async function executeNotebook(
           return { type: "markdown", content: cell.content } as const;
         }
         case "malloy": {
-          if (!cell.code.startsWith("run:")) {
+          // filter out import lines
+          const runnableCode = cell.code
+            .split("\n")
+            .filter((line) => !line.trim().startsWith("import "))
+            .join("\n")
+            .trim();
+          if ("" === runnableCode) {
             return { type: "malloy", code: cell.code, result: null } as const;
           }
-          const result = await executeMalloyQuery(runtime, cell.code, model);
+          const result = await executeMalloyQuery(runtime, runnableCode, model);
           return { type: "malloy", code: cell.code, result } as const;
         }
         default:

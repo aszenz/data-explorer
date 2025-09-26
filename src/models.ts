@@ -138,7 +138,7 @@ async function getDataset(
       return null;
     }
   } else {
-    console.error(`Data not found: ${datasetName}`);
+    console.warn(`Data ${datasetName} not found in local files`);
     return null;
   }
 }

@@ -1,0 +1,52 @@
+-- Superstore, a fictional retail entity in the U.S., specializes in furniture, office supplies, and technology products
+-- Row ID => Unique ID for each row.
+-- Order ID => Unique Order ID for each Customer.
+-- Order Date => Order Date of the product.
+-- Ship Date => Shipping Date of the Product.
+-- Ship Mode=> Shipping Mode specified by the Customer.
+-- Customer ID => Unique ID to identify each Customer.
+-- Customer Name => Name of the Customer.
+-- Segment => The segment where the Customer belongs.
+-- Country => Country of residence of the Customer.
+-- City => City of residence of of the Customer.
+-- State => State of residence of the Customer.
+-- Postal Code => Postal Code of every Customer.
+-- Region => Region where the Customer belong.
+-- Product ID => Unique ID of the Product.
+-- Category => Category of the product ordered.
+-- Sub-Category => Sub-Category of the product ordered.
+-- Product Name => Name of the Product
+-- Sales => Sales of the Product.
+-- Quantity => Quantity of the Product.
+-- Discount => Discount provided.
+-- Profit => Profit/Loss incurred.
+source: superstore is duckdb.table("hf://datasets/An-j96/SuperstoreData@convert%2fparquet/default/train/0000.parquet") extend {
+    primary_key: `Row ID`
+    measure: tot_quantity is Quantity.sum()
+    # number="$0.000,\" K\""
+    measure: tot_profit is Profit.sum()
+    measure: avg_profit is Profit.avg()
+    # number="$0.000,\" K\""
+    measure: tot_sales is Sales.sum()
+    measure: avg_sales is Sales.avg()
+    measure: avg_discount is Discount.avg()
+
+    view: `By Category` is {
+        group_by: Segment
+        aggregate:
+            tot_sales
+            tot_profit
+        nest: `By Category` is {
+            group_by: Category
+            aggregate:
+                tot_sales
+                tot_profit
+            nest: `By Sub category` is {
+                group_by: `Sub-Category`
+                aggregate:
+                    tot_sales
+                    tot_profit
+            }
+        }
+    }
+}

@@ -147,6 +147,7 @@ body,
 }
 
 .malloy-result-display {
+  width: 70%;
   height: 300px;
   overflow: auto;
 }

@@ -14,7 +14,7 @@
     "start": "npm run build && npm run preview"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "1.30.0",
+    "@duckdb/duckdb-wasm": "1.31.0",
     "@malloydata/db-duckdb": "^0.0.313",
     "@malloydata/malloy": "^0.0.313",
     "@malloydata/malloy-explorer": "^0.0.305-dev250819202105",

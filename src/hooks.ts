@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import * as malloy from "@malloydata/malloy";
 import { RuntimeSetup } from "./types";
 import { DuckDBConnection } from "./connection";
+import { getModelCode } from "./models";
 
 export { useRuntimeSetup, useTopValues, setupRuntime };
+
 function useRuntimeSetup(modelDef: null | string) {
   const [setup, setRuntime] = useState<RuntimeSetup | null>(null);
   const [refreshModel, setRefreshModel] = useState(false);
@@ -55,14 +57,34 @@ function useTopValues(
   };
 }
 
-async function setupRuntime(modelDef: string) {
+async function setupRuntime(mainModelCode: string) {
   const conn = new DuckDBConnection("main", undefined, undefined, {
     // This is the default row limit of the connection (when no row limit is provided)
     rowLimit: 10,
   });
-  const runtime = new malloy.SingleConnectionRuntime({ connection: conn });
+  const runtime = new malloy.SingleConnectionRuntime({
+    connection: conn,
+    urlReader: {
+      readURL: async (url: URL) => {
+        if (url.href == "file://main-model.malloy/") {
+          return Promise.resolve({ contents: mainModelCode });
+        }
+        const modelCode = getModelCode(
+          url.pathname.replace("/", "").replace(".malloy", ""),
+        );
+        if (null === modelCode) {
+          return Promise.reject(
+            new Error(`Failed to load model: ${url.pathname}`),
+          );
+        }
+        return Promise.resolve({ contents: modelCode });
+      },
+    },
+  });
   async function load() {
-    const modelMaterializer = runtime.loadModel(modelDef);
+    const modelMaterializer = runtime.loadModel(
+      new URL("file://main-model.malloy"),
+    );
     return await modelMaterializer.getModel();
   }
 

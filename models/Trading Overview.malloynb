@@ -3,12 +3,7 @@
 >>>markdown
 Trading data is an anlysis of orders in an `e-commerce` system.
 >>>malloy
-source: orders is duckdb.table('data/orders.csv') extend {
-    measure: total_revenue is sum(price * quantity)
-    measure: avg_order_value is avg(price * quantity)
-    measure: no_of_orders is count(order_id)
-    measure: total_quantity is sum(quantity)
-}
+import {orders, price_summary} from './trading.malloy'
 >>>markdown
 ## 1. Data preview
 >>>malloy
@@ -19,29 +14,17 @@ run: orders -> {
 >>>markdown
 ## 2. By Category
 >>>malloy
-run: orders -> {
-    group_by: category
-    aggregate:
-        no_of_orders,
-        total_revenue
-    # bar_chart
-    nest: by_products is {
-        group_by: product_name
-        aggregate:
-            no_of_orders,
-            total_revenue
-    }
-}
+run: orders -> `Product categories`
 >>>markdown
 ## 3. By Location
 
 Analysis of orders by customer location.
 >>>malloy
-run: orders -> {
-        group_by: customer_country
-        aggregate:
-            no_of_orders,
-            total_revenue
-}
+run: orders -> `Customer countries`
+>>>markdown
+## 4. Price Summary Query
+>>>malloy
+
+run: price_summary
 >>>malloy
 
