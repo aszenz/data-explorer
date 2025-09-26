@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("Home page loads", async ({ page }) => {
   await page.goto("./");
   await expect(
-    page.getByRole("heading", { name: "Models to explore" }),
+    page.getByRole("heading", { name: "Data Models" }),
   ).toBeVisible();
 });
 
@@ -49,4 +49,18 @@ test("Explorer page loads", async ({ page }) => {
     timeout: 15 * 1000,
   });
   await expect(page.getByRole("heading", { name: "invoices" })).toBeVisible();
+});
+
+test("Notebook page loads", async ({ page }) => {
+  await page.goto("./");
+  await page.getByText("Trading Overview").click();
+  await expect(
+    page.getByRole("heading", { name: "Trading Overview" }),
+  ).toBeVisible({ timeout: 15 * 1000 });
+  await expect(
+    page.getByRole("heading", { name: "1. Data preview" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "2. By Category" }),
+  ).toBeVisible();
 });
