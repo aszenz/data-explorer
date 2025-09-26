@@ -30,10 +30,11 @@ sharing a link.
 
 A notebook is a sequence of markdown and Malloy results that are rendered together in a single page to explain data.
 
-## Publishing your own Malloy models
+## Publishing your own Malloy models and notebooks
 
 1. Clone the repo `git clone https://github.com/aszenz/data-explorer.git`
-2. Look at the `models` directory, it contains example models and data files like [trading model](https://github.com/aszenz/data-explorer/blob/master/models%2Ftrading.malloy) which uses data from two csv files [orders](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/orders.csv) and [contracts](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/contracts.csv), you can add your own models and their data files here.
+2. Look at the `models` directory, it contains example models, notebooks and data files like [trading model](https://github.com/aszenz/data-explorer/blob/master/models%2Ftrading.malloy) which uses data from two csv files [orders](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/orders.csv) and [contracts](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/contracts.csv), you can add your own models, notebooks and their data files here.
+3. Models can also reference data from external URLs, like the [Super Store model](https://github.com/aszenz/data-explorer/blob/master/models%2Fsuperstore.malloy) which uses data from huggingface.
 3. Run `npm run start` to build and run the site locally at `http://localhost:3000`.
 4. Deploy your site by copying the generated `dist` folder to any static web hosting service (like GitHub Pages, Netlify, or Vercel) or serve it using any HTTP server.
 
@@ -44,7 +45,9 @@ A notebook is a sequence of markdown and Malloy results that are rendered togeth
 > - `npx serve -s . -p 8000` (then visit http://localhost:8000)
 
 > [!NOTE]
-> To host the site under a subpath (commonly used for GitHub Pages), add the `BASE_PUBLIC_PATH` environment variable when building the site. For example, to host under `https://yourusername.github.io/your-repo-name/` run:
+> To host the site under a subpath (commonly used for GitHub Pages), add the `BASE_PUBLIC_PATH` environment variable when building the site.
+>
+> For example, to host under `https://yourusername.github.io/your-repo-name/` run:
 > `BASE_PUBLIC_PATH=/your-repo-name/ npm run build`
 >
 > Then deploy the contents of the `dist` folder to your GitHub Pages.
