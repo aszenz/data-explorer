@@ -6,13 +6,9 @@ A static site for sharing data explorations.
 
 ## Demo Examples
 
-Try exploring these models:
+### Try exploring these data models:
 
 - [Sales Orders](https://aszenz.github.io/data-explorer/#/model/sales_orders)
-
-Or these data notebooks:
-
-- [Super Store](https://aszenz.github.io/data-explorer/#/notebook/SuperStore)
 
 On opening, a schema page is shown with views, dimensions and
 measures associated with the model sources.
@@ -27,6 +23,12 @@ explorer are saved to the url so
 sharing a particular query/view
 of the model is as easy as
 sharing a link.
+
+### Try viewing these data notebooks:
+
+- [Super Store](https://aszenz.github.io/data-explorer/#/notebook/SuperStore?showCode)
+
+A notebook is a sequence of markdown and Malloy results that are rendered together in a single page to explain data.
 
 ## Publishing your own Malloy models
 
