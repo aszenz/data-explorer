@@ -30,9 +30,6 @@ function NotebookCellRenderer({
   }
   return (
     <div data-cell-index={cellIndex}>
-      <div className="malloy-result-display">
-        <RenderedResult result={cell.result} />
-      </div>
       {showCode && (
         <details>
           <summary>
@@ -43,6 +40,9 @@ function NotebookCellRenderer({
           </pre>
         </details>
       )}
+      <div className="malloy-result-display">
+        <RenderedResult result={cell.result} />
+      </div>
     </div>
   );
 
