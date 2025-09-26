@@ -34,7 +34,6 @@ A notebook is a sequence of markdown and Malloy results that are rendered togeth
 
 1. Clone the repo `git clone https://github.com/aszenz/data-explorer.git`
 2. Look at the `models` directory, it contains example models, notebooks and data files like [trading model](https://github.com/aszenz/data-explorer/blob/master/models%2Ftrading.malloy) which uses data from two csv files [orders](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/orders.csv) and [contracts](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/contracts.csv), you can add your own models, notebooks and their data files here.
-3. Models can also reference data from external URLs, like the [Super Store model](https://github.com/aszenz/data-explorer/blob/master/models%2Fsuperstore.malloy) which uses data from huggingface.
 3. Run `npm run start` to build and run the site locally at `http://localhost:3000`.
 4. Deploy your site by copying the generated `dist` folder to any static web hosting service (like GitHub Pages, Netlify, or Vercel) or serve it using any HTTP server.
 
@@ -52,6 +51,9 @@ A notebook is a sequence of markdown and Malloy results that are rendered togeth
 >
 > Then deploy the contents of the `dist` folder to your GitHub Pages.
 > You can also look at this [Github Actions File](.github/workflows/ci_cd.yml) for an example of deploying to GitHub Pages.
+
+> [!TIP]
+> Models can also reference data from external URLs, like the [Super Store model](https://github.com/aszenz/data-explorer/blob/master/models%2Fsuperstore.malloy) which uses data from huggingface.
 
 ## Using these awesome technologies
 
