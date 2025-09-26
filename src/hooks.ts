@@ -66,7 +66,7 @@ async function setupRuntime(mainModelCode: string) {
     connection: conn,
     urlReader: {
       readURL: async (url: URL) => {
-        if (url.href == "file://main-model.malloy/") {
+        if (url.href == "http://main-model.malloy/") {
           return Promise.resolve({ contents: mainModelCode });
         }
         const modelCode = getModelCode(
@@ -83,7 +83,7 @@ async function setupRuntime(mainModelCode: string) {
   });
   async function load() {
     const modelMaterializer = runtime.loadModel(
-      new URL("file://main-model.malloy"),
+      new URL("http://main-model.malloy"),
     );
     return await modelMaterializer.getModel();
   }
