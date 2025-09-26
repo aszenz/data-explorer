@@ -10,6 +10,10 @@ Try exploring these models:
 
 - [Sales Orders](https://aszenz.github.io/data-explorer/#/model/sales_orders)
 
+Or these data notebooks:
+
+- [Super Store](https://aszenz.github.io/data-explorer/#/notebook/SuperStore)
+
 On opening, a schema page is shown with views, dimensions and
 measures associated with the model sources.
 
@@ -40,6 +44,7 @@ sharing a link.
 > [!NOTE]
 > To host the site under a subpath (commonly used for GitHub Pages), add the `BASE_PUBLIC_PATH` environment variable when building the site. For example, to host under `https://yourusername.github.io/your-repo-name/` run:
 > `BASE_PUBLIC_PATH=/your-repo-name/ npm run build`
+>
 > Then deploy the contents of the `dist` folder to your GitHub Pages.
 > You can also look at this [Github Actions File](.github/workflows/ci_cd.yml) for an example of deploying to GitHub Pages.
 
