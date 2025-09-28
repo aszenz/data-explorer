@@ -31,11 +31,22 @@ source: superstore is duckdb.table("hf://datasets/An-j96/SuperstoreData@convert%
     measure: avg_sales is Sales.avg()
     measure: avg_discount is Discount.avg()
 
+    measure: no_of_orders is count(`Order ID`)
+    measure: no_of_customers is count(`Customer ID`)
+    measure: no_of_products is count(`Product ID`)
+
+    dimension: order_date is strptime!date(`Order Date`, "%m/%d/%Y")
+    dimension: ship_date is strptime!date(`Ship Date`, "%m/%d/%Y")
+
+    # dashboard
     view: `By Category` is {
         group_by: Segment
         aggregate:
+            no_of_orders
+            no_of_customers
             tot_sales
             tot_profit
+        # break
         nest: `By Category` is {
             group_by: Category
             aggregate:
@@ -47,6 +58,86 @@ source: superstore is duckdb.table("hf://datasets/An-j96/SuperstoreData@convert%
                     tot_sales
                     tot_profit
             }
+        }
+    }
+
+    # dashboard
+    view: `By Region` is {
+        group_by: Country, Region
+        aggregate:
+            tot_sales
+            tot_profit
+            avg_profit
+        # break
+        nest: `By State` is {
+            group_by: State
+            aggregate:
+                tot_sales
+                tot_profit
+                avg_profit
+            # bar_chart {size=lg x='City' y=['tot_sales'] y.independent}
+            nest: `By City` is {
+                group_by: City
+                aggregate:
+                    tot_sales
+                    tot_profit
+            }
+        }
+    }
+
+    # dashboard
+    view: `By Customer` is {
+        group_by: `Customer ID`, `Customer Name`
+        aggregate:
+            no_of_orders
+            tot_sales
+            tot_profit
+            no_of_products
+            avg_profit
+            avg_discount
+        # break
+        # bar_chart {size=lg}
+        nest: `By time` is {
+            group_by: order_date.month
+            aggregate:
+                tot_sales
+        }
+        limit: 10
+    }
+
+    # dashboard
+    view: `By Product` is {
+        group_by: `Product ID`, `Product Name`
+        aggregate:
+            tot_sales
+            tot_profit
+            tot_quantity
+            avg_profit
+            avg_discount
+        # break
+        # bar_chart {size=lg}
+        nest: `By time` is {
+            group_by: order_date.month
+            aggregate:
+                tot_sales
+        }
+        limit: 10
+    }
+
+    # dashboard
+    view: `By ship mode` is {
+        group_by: `Ship Mode`
+        aggregate:
+            no_of_orders
+            tot_sales
+            no_of_products
+            tot_profit
+        # break
+        # bar_chart {size=lg}
+        nest: `By time` is {
+            group_by: ship_date.month
+            aggregate:
+                tot_sales
         }
     }
 }

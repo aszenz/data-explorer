@@ -18,5 +18,25 @@ run: superstore -> {
 >>>malloy
 # dashboard
 run: superstore -> `By Category`
->>>malloy
+>>>markdown
+## 3. Regional Analysis
 
+Analyze sales in each region, state and city
+>>>malloy
+run: superstore -> `By Region`
+>>>markdown
+## 4. Analyzing Sales By Customer
+
+Analyze top customers over time
+>>>malloy
+run: superstore -> `By Customer`
+>>>markdown
+## 5. Analyse Sales By Product
+
+Analyze top products over time
+>>>malloy
+run: superstore -> `By Product`
+>>>markdown
+## 6. Analyze Sales By Shipping Mode
+>>>malloy
+run: superstore -> `By ship mode`
