@@ -73,23 +73,20 @@ function NotebookViewer({
   }
 
   return (
-    <div>
-      <main>
-        {notebook.cells.map((cell, index) => (
-          <NotebookCellRenderer
-            key={index}
-            cell={cell}
-            cellIndex={index}
-            showCode={showCode}
-          />
-        ))}
-      </main>
-
+    <main className="notebook">
+      {notebook.cells.map((cell, index) => (
+        <NotebookCellRenderer
+          key={index}
+          cell={cell}
+          cellIndex={index}
+          showCode={showCode}
+        />
+      ))}
       {notebook.cells.length === 0 && (
         <div>
           <p>This page is empty.</p>
         </div>
       )}
-    </div>
+    </main>
   );
 }

@@ -29,9 +29,30 @@ function NotebookCellRenderer({
     return null;
   }
   return (
-    <div data-cell-index={cellIndex}>
+    <div className="notebook-cell">
+      <details
+        name={`cell-index-${cellIndex}`}
+        open
+        data-cell-index={cellIndex}
+      >
+        <summary>
+          Output
+          <button
+            type="button"
+            popoverTarget={`cell-result-expand-${cellIndex}`}
+          >
+            Expand
+          </button>
+        </summary>
+        <div className="malloy-result-display">
+          <RenderedResult result={cell.result} />
+        </div>
+        <div popover="auto" id={`cell-result-expand-${cellIndex}`}>
+          <RenderedResult result={cell.result} />
+        </div>
+      </details>
       {showCode && (
-        <details>
+        <details name={`cell-index-${cellIndex}`}>
           <summary>
             <span>Code</span>
           </summary>
@@ -40,11 +61,6 @@ function NotebookCellRenderer({
           </pre>
         </details>
       )}
-      <div className="malloy-result-display">
-        <RenderedResult result={cell.result} />
-      </div>
     </div>
   );
-
-  return null;
 }

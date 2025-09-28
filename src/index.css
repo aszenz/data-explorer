@@ -23,6 +23,7 @@
 
 body,
 #root {
+  padding: 0.25rem 0.75rem;
   height: 100%;
 }
 
@@ -150,4 +151,62 @@ body,
   width: 70%;
   height: 300px;
   overflow: auto;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+.notebook {
+  &.malloy-result-display {
+    width: 95%;
+    height: 350px;
+    overflow: auto;
+  }
+
+  & details {
+    width: 100%;
+  }
+
+  & div[popover] {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 90%;
+    height: 90%;
+  }
+
+  & div[popover]::backdrop {
+    backdrop-filter: blur(2px);
+  }
+
+  & summary {
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  & .notebook-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
 }
