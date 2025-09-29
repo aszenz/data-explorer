@@ -13,7 +13,7 @@ function ModelHome() {
     <div>
       <h1>Malloy model {urlParams.model}</h1>
       <SchemaRenderer
-        explores={runtime.model.explores}
+        explores={runtime.model.exportedExplores}
         queries={runtime.model.namedQueries}
         defaultShow={true}
         onPreviewClick={(explore) => {
