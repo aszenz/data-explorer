@@ -31,7 +31,7 @@ function NotebookCellRenderer({
   return (
     <div className="notebook-cell">
       <details
-        name={`cell-index-${cellIndex}`}
+        name={`cell-index-${cellIndex.toString()}`}
         open
         data-cell-index={cellIndex}
       >
@@ -39,7 +39,7 @@ function NotebookCellRenderer({
           Output
           <button
             type="button"
-            popoverTarget={`cell-result-expand-${cellIndex}`}
+            popoverTarget={`cell-result-expand-${cellIndex.toString()}`}
           >
             Expand
           </button>
@@ -47,12 +47,12 @@ function NotebookCellRenderer({
         <div className="malloy-result-display">
           <RenderedResult result={cell.result} />
         </div>
-        <div popover="auto" id={`cell-result-expand-${cellIndex}`}>
+        <div popover="auto" id={`cell-result-expand-${cellIndex.toString()}`}>
           <RenderedResult result={cell.result} />
         </div>
       </details>
       {showCode && (
-        <details name={`cell-index-${cellIndex}`}>
+        <details name={`cell-index-${cellIndex.toString()}`}>
           <summary>
             <span>Code</span>
           </summary>

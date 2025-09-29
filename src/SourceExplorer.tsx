@@ -114,7 +114,7 @@ function SourceExplorer({ sourceName }: { sourceName: string }) {
         query: queryString,
       });
     },
-    [source, updateQueryInUrl],
+    [updateQueryInUrl],
   );
 
   // Execute query when URL indicates to run
