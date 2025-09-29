@@ -17,7 +17,7 @@ function ModelExplorer() {
       <div className="columns">
         <h2>{modelName}</h2>
         <ul className="tabs">
-          {model.explores.map((explore) => (
+          {model.exportedExplores.map((explore) => (
             <li
               key={explore.name}
               className={explore.name === sourceName ? "active" : ""}
