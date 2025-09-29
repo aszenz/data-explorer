@@ -1,25 +1,17 @@
 import NotebookViewer from "./NotebookViewer";
-import { useParams, useSearchParams } from "react-router";
-import { getNotebookCode } from "./models";
+import { useSearchParams } from "react-router";
+import { useLoaderData } from "react-router";
+import { NotebookLoaderData } from "./routeType";
 
 export default DataNotebook;
 
 function DataNotebook() {
-  const { notebook } = useParams();
   const [urlSearchParams] = useSearchParams();
-  if (undefined === notebook) {
-    throw new Error("Notebook name is required");
-  }
-  const notebookCode = getNotebookCode(notebook);
-
-  if (null === notebookCode) {
-    return <div>Notebook {notebook} not found.</div>;
-  }
+  const notebook = useLoaderData<NotebookLoaderData>();
 
   return (
     <NotebookViewer
-      content={notebookCode}
-      filename={notebook}
+      notebook={notebook}
       showCode={urlSearchParams.has("showCode")}
     />
   );

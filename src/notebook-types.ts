@@ -19,6 +19,7 @@ type ParsedNotebook = {
   metadata: {
     title?: string;
   };
+  toModel: () => string;
 };
 
 type CellOutput = MarkdownCell | (MalloyCell & { result: Result | null });

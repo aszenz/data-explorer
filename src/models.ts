@@ -85,10 +85,8 @@ function getModelCode(modelName: string): null | string {
       console.error(`Failed to load model: ${modelName}`, error);
       return null;
     }
-  } else {
-    console.error(`Model not found: ${modelName}`);
-    return null;
   }
+  return null;
 }
 
 function getNotebookCode(notebookName: string): null | string {
@@ -107,10 +105,8 @@ function getNotebookCode(notebookName: string): null | string {
       console.error(`Failed to load notebook: ${notebookName}`, error);
       return null;
     }
-  } else {
-    console.error(`Notebook not found: ${notebookName}`);
-    return null;
   }
+  return null;
 }
 
 async function getDataset(

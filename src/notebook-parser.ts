@@ -61,6 +61,11 @@ export function parseNotebook(content: string): ParsedNotebook {
   return {
     cells: cells,
     metadata,
+    toModel: () =>
+      cells
+        .filter((cell) => "malloy" === cell.type)
+        .map((cell) => cell.code)
+        .join("\n"),
   };
 }
 

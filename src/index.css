@@ -1,3 +1,9 @@
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -21,10 +27,21 @@
   }
 } */
 
-body,
+body {
+  margin: 0;
+  height: 100%;
+}
+
 #root {
   padding: 0.25rem 0.75rem;
   height: 100%;
+}
+
+nav {
+  > ul {
+    display: flex;
+    gap: 1.5rem;
+  }
 }
 
 .schema {
@@ -142,21 +159,10 @@ body,
 }
 
 .model-explorer {
+  height: 85%;
   h2 {
     margin: 0;
   }
-}
-
-.malloy-result-display {
-  width: 70%;
-  height: 300px;
-  overflow: auto;
-}
-
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 h1,
@@ -169,7 +175,11 @@ h6 {
 }
 
 .notebook {
-  &.malloy-result-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  & .malloy-result-display {
     width: 95%;
     height: 350px;
     overflow: auto;
@@ -208,5 +218,29 @@ h6 {
     border: 1px solid #ccc;
     border-radius: 8px;
     background-color: #f9f9f9;
+  }
+}
+
+.menu {
+  anchor-scope: --menu-button;
+
+  & button {
+    anchor-name: --menu-button;
+    width: fit-content;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 1rem;
+  }
+  & ul[popover] {
+    position: fixed;
+    position-anchor: --menu-button;
+    inset-block-start: anchor(--menu-button bottom);
+    inset-inline-start: anchor(--menu-button right);
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    border: 0;
   }
 }

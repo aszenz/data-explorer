@@ -1,0 +1,297 @@
+import { createHashRouter } from "react-router";
+import ModelHome from "./ModelHome";
+import ModelExplorer from "./ModelExplorer";
+import * as MalloyInterface from "@malloydata/malloy-interfaces";
+import { SubmittedQuery } from "@malloydata/malloy-explorer";
+import PreviewResult from "./PreviewResult";
+import QueryResult from "./QueryResult";
+import DataNotebook from "./DataNotebook";
+import ErrorBoundary from "./ErrorBoundary";
+import SharedLayout from "./SharedLayout";
+import Home from "./Home";
+import { getNotebookCode } from "./models";
+import * as malloy from "@malloydata/malloy";
+import { parseNotebook, validateNotebook } from "./notebook-parser";
+import { executeNotebook } from "./notebook-executor";
+import { RuntimeSetup } from "./types";
+
+import {
+  executeMalloyPreparedQuery,
+  executeMalloyQuery,
+  getSourceInfo,
+  parseMalloyExplorerQuery,
+  setupMalloyRuntime,
+} from "./helpers";
+import * as RouteTypes from "./routeType";
+
+export default createAppRouter;
+
+type SourceCache = {
+  info: MalloyInterface.SourceInfo;
+  topValues: malloy.SearchValueMapResult[];
+  queryCache: Map<string, MalloyInterface.Query>;
+  resultCache: Map<string, SubmittedQuery>;
+};
+type ModelCache = {
+  model: malloy.Model;
+  modelMaterializer: malloy.ModelMaterializer;
+  sources: Map<string, SourceCache>;
+};
+type ModelsCache = Map<string, ModelCache>;
+
+function createAppRouter(): ReturnType<typeof createHashRouter> {
+  const { runtime, getModelURL } = setupMalloyRuntime();
+  const cachedModels: ModelsCache = new Map();
+
+  async function loadAndCacheModel(modelName: string): Promise<ModelCache> {
+    const model =
+      cachedModels.get(modelName) ??
+      (await (async () => {
+        console.log(`Loading model ${modelName}`);
+        const modelMaterializer = runtime.loadModel(getModelURL(modelName));
+        const model = await modelMaterializer.getModel();
+        const cacheEntry = {
+          model,
+          modelMaterializer,
+          sources: new Map(),
+        };
+        cachedModels.set(modelName, cacheEntry);
+        return cacheEntry;
+      })());
+    return model;
+  }
+
+  async function loadAndCacheSource(
+    modelName: string,
+    sourceName: string,
+  ): Promise<SourceCache> {
+    const cachedModel = await loadAndCacheModel(modelName);
+
+    const source =
+      cachedModel.sources.get(sourceName) ??
+      (await (async () => {
+        console.log(`Loading source ${sourceName}`);
+        const sourceInfo = getSourceInfo(
+          cachedModel.model._modelDef,
+          sourceName,
+        );
+        const topValues =
+          (await cachedModel.modelMaterializer.searchValueMap(
+            sourceName,
+            10,
+          )) ?? [];
+        const sourceCache = {
+          info: sourceInfo,
+          topValues,
+          queryCache: new Map(),
+          resultCache: new Map(),
+        };
+        cachedModel.sources.set(sourceName, sourceCache);
+        return sourceCache;
+      })());
+    return source;
+  }
+
+  function loadAndCacheMalloyQuery(
+    source: SourceCache,
+    querySrc: string,
+  ): undefined | MalloyInterface.Query {
+    return (
+      source.queryCache.get(querySrc) ??
+      (() => {
+        console.log(`Parsing query ${querySrc}`);
+        const parsedQuery = parseMalloyExplorerQuery(querySrc);
+        if (undefined === parsedQuery) {
+          return undefined;
+        }
+        source.queryCache.set(querySrc, parsedQuery);
+        return parsedQuery;
+      })()
+    );
+  }
+
+  async function loadAndCacheMalloyQueryResult(
+    source: SourceCache,
+    modelMaterializer: malloy.ModelMaterializer,
+    parsedQuery: undefined | MalloyInterface.Query,
+    querySrc: string,
+  ): Promise<SubmittedQuery> {
+    return (
+      source.resultCache.get(querySrc) ??
+      (async () => {
+        console.log(`Running query ${querySrc}`);
+        const result = await executeMalloyQuery(
+          modelMaterializer,
+          querySrc,
+          parsedQuery,
+        );
+        source.resultCache.set(querySrc, result);
+        return result;
+      })()
+    );
+  }
+
+  /**
+   * @todo: Remove it's usage
+   */
+  async function getRuntimeSetup(modelName: string): Promise<RuntimeSetup> {
+    const loadedModel = await loadAndCacheModel(modelName);
+
+    return {
+      runtime,
+      modelMaterializer: loadedModel.modelMaterializer,
+      model: loadedModel.model,
+      refreshModel: () => {},
+    };
+  }
+
+  return createHashRouter([
+    {
+      path: "/",
+      element: <SharedLayout />,
+      errorElement: <ErrorBoundary />,
+      hydrateFallbackElement: <div>Loading app...</div>,
+      children: [
+        {
+          index: true,
+          element: <Home />,
+        },
+        {
+          id: "model",
+          path: "model/:model",
+          loader: async ({
+            params,
+          }): Promise<RouteTypes.ModelHomeLoaderData> => {
+            if (undefined === params.model) {
+              throw new Error("Model name is required");
+            }
+            return getRuntimeSetup(params.model);
+          },
+          children: [
+            {
+              index: true,
+              element: <ModelHome />,
+            },
+            {
+              path: "preview/:source",
+              loader: async ({
+                params,
+              }): Promise<RouteTypes.PreviewSourceLoaderData> => {
+                const { model: modelName, source } = params;
+                if (undefined === modelName) {
+                  throw new Error("Model name is required");
+                }
+                if (undefined === source) {
+                  throw new Error("Source name is required");
+                }
+                const { modelMaterializer } =
+                  await loadAndCacheModel(modelName);
+                const output = await executeMalloyQuery(
+                  modelMaterializer,
+                  `run: ${source} -> {select: *; limit: 50}`,
+                );
+                const queryResult = output.response?.result;
+                if (undefined === queryResult) {
+                  throw new Error("Error running query");
+                }
+                return queryResult;
+              },
+              element: <PreviewResult />,
+            },
+            {
+              path: "explorer/:source",
+              loader: async ({
+                request,
+                params,
+              }): Promise<RouteTypes.SourceExplorerLoaderData> => {
+                const { model: modelName, source: sourceName } = params;
+                if (undefined === modelName) {
+                  throw new Error("Model name is required");
+                }
+                if (undefined === sourceName) {
+                  throw new Error("Source name is required");
+                }
+                const urlSearchParams = new URL(request.url).searchParams;
+                const querySrcParam = urlSearchParams.get("query");
+                const runQueryParam = urlSearchParams.get("run");
+
+                const { modelMaterializer } =
+                  await loadAndCacheModel(modelName);
+                const source = await loadAndCacheSource(modelName, sourceName);
+                const parsedQuery =
+                  null === querySrcParam
+                    ? undefined
+                    : loadAndCacheMalloyQuery(source, querySrcParam);
+                const submittedQuery =
+                  "true" === runQueryParam && null !== querySrcParam
+                    ? await loadAndCacheMalloyQueryResult(
+                        source,
+                        modelMaterializer,
+                        parsedQuery,
+                        querySrcParam,
+                      )
+                    : undefined;
+                console.info("SourceExplorer loader");
+                return {
+                  sourceInfo: source.info,
+                  topValues: source.topValues,
+                  parsedQuery: parsedQuery,
+                  submittedQuery: submittedQuery,
+                };
+              },
+              element: <ModelExplorer />,
+            },
+            {
+              path: "query/:query",
+              loader: async ({
+                params,
+              }): Promise<RouteTypes.PreparedQueryLoaderData> => {
+                const { model: modelName, query: queryName } = params;
+                if (undefined === modelName) {
+                  throw new Error("Model name is required");
+                }
+                if (undefined === queryName) {
+                  throw new Error("Query is required");
+                }
+                const { runtime, model } = await getRuntimeSetup(modelName);
+                return executeMalloyPreparedQuery(runtime, model, queryName);
+              },
+              element: <QueryResult />,
+            },
+          ],
+        },
+        {
+          path: "notebook/:notebook",
+          element: <DataNotebook />,
+          loader: async ({
+            params,
+          }): Promise<RouteTypes.NotebookLoaderData> => {
+            const { notebook } = params;
+            if (undefined === notebook) {
+              throw new Error("Notebook name is required");
+            }
+            const notebookCode = getNotebookCode(notebook);
+            if (null === notebookCode) {
+              throw new Error(`Notebook ${notebook} not found`);
+            }
+            // Validate and parse the notebook content
+            const validation = validateNotebook(notebookCode);
+            if (!validation.valid) {
+              throw new Error(validation.errors.join(","));
+            }
+            const parsed = parseNotebook(notebookCode);
+            const output = await executeNotebook(
+              getRuntimeSetup,
+              notebook,
+              parsed,
+            );
+            // if (undefined !== output.metadata.title) {
+            //   document.title = output.metadata.title;
+            // }
+            return output;
+          },
+        },
+      ],
+    },
+  ]);
+}
