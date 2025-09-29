@@ -110,7 +110,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           await fileContent.text(),
         );
         await this.connection.query(
-          `CREATE TABLE "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
+          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
         );
         break;
       case "xlsx":
@@ -119,7 +119,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           new Uint8Array(await fileContent.arrayBuffer()),
         );
         await this.connection.query(
-          `CREATE TABLE "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
+          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
         );
         break;
       case "parquet":
@@ -129,7 +129,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           new Uint8Array(await fileContent.arrayBuffer()),
         );
         await this.connection.query(
-          `CREATE TABLE "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
+          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
         );
         break;
 
@@ -142,11 +142,11 @@ export class DuckDBConnection extends DuckDBWASMConnection {
         );
         if (fileType === "json") {
           await this.connection.query(
-            `CREATE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
+            `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
           );
         } else {
           await this.connection.query(
-            `CREATE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
+            `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
           );
         }
         break;

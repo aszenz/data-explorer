@@ -1,22 +1,17 @@
-import { setupRuntime } from "./hooks";
-import {
-  CellOutput,
-  MalloyCell,
-  NotebookOutput,
-  ParsedNotebook,
-} from "./notebook-types";
-import { executeMalloyQuery } from "./SourceExplorer";
+import { CellOutput, NotebookOutput, ParsedNotebook } from "./notebook-types";
+import { RuntimeSetup } from "./types";
+import { executeMalloyQuery } from "./helpers";
 
 export { executeNotebook };
 
 async function executeNotebook(
+  getRuntimeSetup: (_: string) => Promise<RuntimeSetup>,
+  notebookName: string,
   notebook: ParsedNotebook,
 ): Promise<NotebookOutput> {
-  const notebookModel = parseModel(
-    notebook.cells.filter((cell) => cell.type === "malloy"),
-  );
+  const notebookModel = notebook.toModel();
   console.log("Malloy Model to execute:", notebookModel);
-  const { model, runtime } = await setupRuntime(notebookModel);
+  const { modelMaterializer } = await getRuntimeSetup(notebookName);
   const cellOutputs: CellOutput[] = await Promise.all(
     notebook.cells.map(async (cell) => {
       switch (cell.type) {
@@ -33,8 +28,15 @@ async function executeNotebook(
           if ("" === runnableCode) {
             return { type: "malloy", code: cell.code, result: null } as const;
           }
-          const result = await executeMalloyQuery(runtime, runnableCode, model);
-          return { type: "malloy", code: cell.code, result } as const;
+          const { response } = await executeMalloyQuery(
+            modelMaterializer,
+            runnableCode,
+          );
+          return {
+            type: "malloy",
+            code: cell.code,
+            result: response?.result ?? null,
+          } as const;
         }
         default:
           assertUnreachable(cell);
@@ -45,10 +47,6 @@ async function executeNotebook(
     cells: cellOutputs,
     metadata: notebook.metadata,
   };
-}
-
-function parseModel(malloyCells: MalloyCell[]): string {
-  return malloyCells.map((cell) => cell.code).join("\n");
 }
 
 function assertUnreachable(_: never): never {

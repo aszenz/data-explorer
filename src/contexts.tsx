@@ -1,25 +1,12 @@
-import React, { createContext, useContext } from "react";
-import { RuntimeSetup } from "./types";
+import { useRouteLoaderData } from "react-router";
+import { ModelHomeLoaderData } from "./routeType";
 
-export { useRuntime, RuntimeProvider };
+export { useRuntime };
 
 function useRuntime() {
-  const context = useContext(RuntimeContext);
-  if (context === undefined) {
-    throw new Error("useRuntime must be used within a RuntimeProvider");
+  const setup = useRouteLoaderData<ModelHomeLoaderData>("model");
+  if (undefined === setup) {
+    throw new Error("Model data not found");
   }
-  return context;
-}
-
-const RuntimeContext = createContext<RuntimeSetup | undefined>(undefined);
-
-type RuntimeProviderProps = {
-  children: React.ReactNode;
-  setup: RuntimeSetup;
-};
-
-function RuntimeProvider({ children, setup }: RuntimeProviderProps) {
-  return (
-    <RuntimeContext.Provider value={setup}>{children}</RuntimeContext.Provider>
-  );
+  return setup;
 }
