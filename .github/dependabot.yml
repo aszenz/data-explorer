@@ -4,11 +4,16 @@ updates:
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
-    # Check for updates every day (weekdays)
+    # Check for updates at the start of every month
     schedule:
       interval: "monthly"
-    # Limit to 10 open pull requests for version updates
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "09:00"
+    # Group all npm package updates into a single PR
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
