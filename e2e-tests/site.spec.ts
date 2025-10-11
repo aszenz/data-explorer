@@ -49,7 +49,9 @@ test.describe("Explorer page", () => {
     await page.getByText("by_status").click({
       timeout: 15 * 1000,
     });
-    await expect(page.getByRole("heading", { name: "invoices" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Explorer for invoices" }),
+    ).toBeVisible();
   });
   test("Change visualization", async ({ page }) => {
     await page.goto(

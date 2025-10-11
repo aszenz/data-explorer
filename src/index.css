@@ -1,9 +1,3 @@
-/* Reset */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -35,6 +29,12 @@ body {
 #root {
   padding: 0.25rem 0.75rem;
   height: 100%;
+  /* Reset */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 }
 
 nav {
@@ -133,28 +133,10 @@ nav {
   }
 }
 
-.tabs {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 0;
-  gap: 1rem;
-
-  li {
-    list-style: none;
-    padding: 0.25em 0.5em;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 1px solid black;
-  }
-  li.active {
-    background-color: aqua;
-  }
-}
 .columns {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: 0.5rem;
   align-items: baseline;
 }
 
@@ -229,6 +211,7 @@ h6 {
     width: fit-content;
     background-color: transparent;
     border: 0;
+    padding: 0;
     cursor: pointer;
     text-decoration: underline;
     font-size: 1rem;
@@ -240,7 +223,11 @@ h6 {
     inset-inline-start: anchor(--menu-button right);
     background-color: #f9f9f9;
     margin: 0;
-    padding: 0.25rem 0.5rem;
+    padding: 0;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
     border: 0;
+    & li {
+      padding: 0.5rem;
+    }
   }
 }
