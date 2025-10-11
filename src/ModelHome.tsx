@@ -44,6 +44,10 @@ function ModelHome() {
             void navigate(`query/${query.name}`);
           }
         }}
+        onExploreClick={(explore) => {
+          const source = explore.name;
+          void navigate(`explorer/${source}`);
+        }}
       />
     </div>
   );

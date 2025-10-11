@@ -38,6 +38,7 @@ type SchemaRendererProps = {
   onFieldClick?: (field: Field) => void;
   onQueryClick?: (query: NamedQuery | QueryField) => void;
   onPreviewClick?: (explore: Explore) => void;
+  onExploreClick?: (explore: Explore) => void;
   defaultShow: boolean;
 };
 
@@ -47,6 +48,7 @@ function SchemaRenderer({
   onFieldClick,
   onQueryClick,
   onPreviewClick,
+  onExploreClick,
   defaultShow,
 }: SchemaRendererProps) {
   const hidden = !defaultShow;
@@ -74,6 +76,7 @@ function SchemaRenderer({
             onFieldClick={onFieldClick}
             onPreviewClick={onPreviewClick}
             onQueryClick={onQueryClick}
+            onExploreClick={onExploreClick}
             startHidden={hidden}
           />
         ))}
@@ -163,6 +166,7 @@ type StructItemProps = {
   onFieldClick?: (field: Field) => void;
   onQueryClick?: (query: NamedQuery | QueryField) => void;
   onPreviewClick?: (explore: Explore) => void;
+  onExploreClick?: (explore: Explore) => void;
   startHidden: boolean;
 };
 
@@ -172,6 +176,7 @@ function StructItem({
   onFieldClick,
   onQueryClick,
   onPreviewClick,
+  onExploreClick,
   startHidden,
 }: StructItemProps) {
   const [hidden, setHidden] = React.useState(startHidden);
@@ -180,10 +185,16 @@ function StructItem({
     setHidden(!hidden);
   };
 
-  const onClick = (event: React.MouseEvent) => {
+  const onClickingPreview = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     onPreviewClick?.(explore);
+  };
+
+  const onClickingExplore = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onExploreClick?.(explore);
   };
 
   function fieldList(fields: Field[], path: string) {
@@ -238,9 +249,15 @@ function StructItem({
         {getIconElement(`struct_${subtype}`, false)}
         <b className="explore_name">{getExploreName(explore, path)}</b>
         {onPreviewClick ? (
-          <span className="preview" onClick={onClick}>
+          <span className="preview" onClick={onClickingPreview}>
             {" "}
             Preview{" "}
+          </span>
+        ) : null}
+        {onExploreClick ? (
+          <span className="preview" onClick={onClickingExplore}>
+            {" "}
+            Explore{" "}
           </span>
         ) : null}
       </div>
@@ -272,6 +289,7 @@ function StructItem({
                 onFieldClick={onFieldClick}
                 onPreviewClick={onPreviewClick}
                 onQueryClick={onQueryClick}
+                onExploreClick={onExploreClick}
                 startHidden={true}
               />
             ))
