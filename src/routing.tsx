@@ -263,6 +263,13 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
         {
           path: "notebook/:notebook",
           element: <DataNotebook />,
+          shouldRevalidate: (arg) => {
+            // Prevent revalidation on search param changes
+            if (arg.currentUrl.pathname === arg.nextUrl.pathname) {
+              return false;
+            }
+            return arg.defaultShouldRevalidate;
+          },
           loader: async ({
             params,
           }): Promise<RouteTypes.NotebookLoaderData> => {

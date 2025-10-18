@@ -76,16 +76,24 @@ test.describe("Explorer page", () => {
   });
 });
 
-test("Notebook page loads", async ({ page }) => {
-  await page.goto("./");
-  await page.getByRole("link", { name: "Trading Overview" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Trading Overview" }),
-  ).toBeVisible({ timeout: 15 * 1000 });
-  await expect(
-    page.getByRole("heading", { name: "1. Data preview" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "2. By Category" }),
-  ).toBeVisible();
+test.describe("Notebook page", () => {
+  test("Notebook page loads", async ({ page }) => {
+    await page.goto("./");
+    await page.getByRole("link", { name: "Trading Overview" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Trading Overview" }),
+    ).toBeVisible({ timeout: 15 * 1000 });
+    await expect(
+      page.getByRole("heading", { name: "1. Data preview" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "2. By Category" }),
+    ).toBeVisible();
+  });
+  test("Opening notebook cell in expanded view", async ({ page }) => {
+    await page.goto("/#/notebook/Trading%20Overview?cell-expanded=4");
+    await expect(page.getByTestId("notebook-cell-popover-4")).toBeVisible({
+      timeout: 15 * 1000,
+    });
+  });
 });
