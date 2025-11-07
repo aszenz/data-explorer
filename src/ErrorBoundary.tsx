@@ -1,8 +1,9 @@
 import { isRouteErrorResponse, useRouteError } from "react-router";
+import { JSX } from "react/jsx-runtime";
 
 export default ErrorBoundary;
 
-function ErrorBoundary() {
+function ErrorBoundary(): JSX.Element {
   const error = useRouteError();
   if (isRouteErrorResponse(error)) {
     return (
@@ -13,7 +14,8 @@ function ErrorBoundary() {
         <p>{error.data}</p>
       </>
     );
-  } else if (error instanceof Error) {
+  }
+  if (error instanceof Error) {
     return (
       <div>
         <h1>Error</h1>
@@ -22,7 +24,6 @@ function ErrorBoundary() {
         <pre>{error.stack}</pre>
       </div>
     );
-  } else {
-    return <h1>Unknown Error</h1>;
   }
+  return <h1>Unknown Error</h1>;
 }

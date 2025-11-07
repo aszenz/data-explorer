@@ -1,10 +1,11 @@
-import RenderedResult from "./RenderedResult";
 import { useLoaderData, useParams } from "react-router";
-import { PreviewSourceLoaderData } from "./routeType";
+import RenderedResult from "./RenderedResult";
+import type { PreviewSourceLoaderData } from "./routeType";
+import { JSX } from "react/jsx-runtime";
 
 export default PreviewResult;
 
-function PreviewResult() {
+function PreviewResult(): JSX.Element {
   const { source: sourceName } = useParams();
   const result = useLoaderData<PreviewSourceLoaderData>();
   return (

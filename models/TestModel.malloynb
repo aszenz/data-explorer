@@ -1,0 +1,9 @@
+>>>malloy
+source: test is duckdb.sql("select value.generate_series as num from generate_series(1, 10) as value")
+>>>malloy
+run: test -> {
+  aggregate:
+    total is sum(num)
+}
+>>>malloy
+

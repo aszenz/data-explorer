@@ -32,6 +32,7 @@ export default tseslint.config({
     ...reactHooks.configs.recommended.rules,
     ...eslintReact.configs.recommended.rules,
     ...eslintReact.configs["jsx-runtime"].rules,
+    "@typescript-eslint/no-shadow": ["error"],
     "react-refresh/only-export-components": [
       "warn",
       { allowConstantExport: true },

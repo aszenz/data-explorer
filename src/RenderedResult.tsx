@@ -1,17 +1,22 @@
-import * as malloyInterfaces from "@malloydata/malloy-interfaces";
+import type * as malloyInterfaces from "@malloydata/malloy-interfaces";
 import { useEffect, useMemo, useRef } from "react";
 import { MalloyRenderer } from "@malloydata/render";
+import { JSX } from "react/jsx-runtime";
 
 export default RenderedResult;
 
-function RenderedResult({ result }: { result: malloyInterfaces.Result }) {
+function RenderedResult({
+  result,
+}: {
+  result: malloyInterfaces.Result;
+}): JSX.Element {
   const vizContainer = useRef<HTMLDivElement>(null);
   const viz = useMemo(() => {
     const renderer = new MalloyRenderer();
-    const viz = renderer.createViz({
+    const _viz = renderer.createViz({
       tableConfig: { enableDrill: false },
     });
-    return viz;
+    return _viz;
   }, []);
 
   useEffect(() => {
@@ -21,5 +26,5 @@ function RenderedResult({ result }: { result: malloyInterfaces.Result }) {
     }
   }, [viz, result]);
 
-  return <div style={{ height: "99%" }} ref={vizContainer}></div>;
+  return <div style={{ height: "99%" }} ref={vizContainer} />;
 }

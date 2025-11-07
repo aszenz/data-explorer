@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import MarkdownRenderer from "./MarkdownRenderer";
-import { CellOutput } from "./notebook-types";
-import RenderedResult from "./RenderedResult";
 import { useSearchParams } from "react-router";
+import MarkdownRenderer from "./MarkdownRenderer";
+import type { CellOutput } from "./notebook-types";
+import RenderedResult from "./RenderedResult";
+import { JSX } from "react/jsx-runtime";
 
 export default NotebookCellRenderer;
 
@@ -18,7 +19,7 @@ function NotebookCellRenderer({
   cell,
   cellIndex,
   showCode = false,
-}: NotebookCellRendererProps) {
+}: NotebookCellRendererProps): JSX.Element | null {
   const [searchParams, setSearchParams] = useSearchParams();
   const popOverRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

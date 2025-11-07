@@ -1,11 +1,11 @@
-import { useParams } from "react-router";
+import { useParams, useLoaderData } from "react-router";
 import RenderedResult from "./RenderedResult";
-import { useLoaderData } from "react-router";
-import { PreparedQueryLoaderData } from "./routeType";
+import type { PreparedQueryLoaderData } from "./routeType";
+import { JSX } from "react/jsx-runtime";
 
 export default QueryResult;
 
-function QueryResult() {
+function QueryResult(): JSX.Element {
   const urlParams = useParams();
   const queryName = urlParams.query;
   const result = useLoaderData<PreparedQueryLoaderData>();

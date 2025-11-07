@@ -1,14 +1,34 @@
-import * as malloy from "@malloydata/malloy";
+import type * as malloy from "@malloydata/malloy";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { DuckDBWASMConnection } from "@malloydata/db-duckdb/wasm";
 import duckdbWasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
 import mvpWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
 import duckdbWasmEh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 import ehWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
-import { getDataset, SupportedFileType } from "./models";
 
-export class DuckDBConnection extends DuckDBWASMConnection {
-  getBundles(): duckdb.DuckDBBundles {
+export type GetDataset = (
+  _table: string,
+) => Promise<{ data: Blob; fileType: SupportedFileType } | null>;
+export type SupportedFileType =
+  | "csv"
+  | "parquet"
+  | "json"
+  | "jsonl"
+  | "ndjson"
+  | "xlsx";
+export default class DuckDBConnection extends DuckDBWASMConnection {
+  private getDataset: GetDataset;
+
+  constructor(
+    getDataset: GetDataset,
+    duckdbWasmOptions: { name: string; additionalExtensions?: string[] },
+    queryOptions: malloy.QueryOptionsReader,
+  ) {
+    super({ ...duckdbWasmOptions, motherDuckToken: undefined }, queryOptions);
+    this.getDataset = getDataset;
+  }
+
+  override getBundles(): duckdb.DuckDBBundles {
     return {
       mvp: {
         mainModule: duckdbWasm,
@@ -20,7 +40,8 @@ export class DuckDBConnection extends DuckDBWASMConnection {
       },
     };
   }
-  async init() {
+
+  override async init(): Promise<void> {
     // Select a bundle based on browser checks
     const bundle = await duckdb.selectBundle(this.getBundles());
     const logger = new duckdb.VoidLogger();
@@ -47,7 +68,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
   /**
    * Override the runDuckDBQuery method to load the required tables from the server
    */
-  protected async runDuckDBQuery(
+  protected override async runDuckDBQuery(
     sql: string,
     abortSignal?: AbortSignal,
   ): Promise<{ rows: malloy.QueryDataRow[]; totalRows: number }> {
@@ -69,12 +90,9 @@ export class DuckDBConnection extends DuckDBWASMConnection {
       tablesRequiredForQueryExecution
         .filter((table) => !alreadyLoadedTables.includes(table))
         .map(async (table) => {
-          const datasetContents = await getDataset(table);
+          const datasetContents = await this.getDataset(table);
           if (null === datasetContents) {
-            console.info(`Dataset ${table} not found, installing httpfs`);
-            await this.connection?.query("install httpfs");
-            await this.connection?.query("load httpfs");
-            return;
+            throw new Error(`Dataset ${table} not found`);
           }
 
           await this._loadDataFromFile(

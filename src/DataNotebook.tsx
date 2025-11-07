@@ -1,11 +1,11 @@
+import { useSearchParams, useLoaderData } from "react-router";
 import NotebookViewer from "./NotebookViewer";
-import { useSearchParams } from "react-router";
-import { useLoaderData } from "react-router";
-import { NotebookLoaderData } from "./routeType";
+import type { NotebookLoaderData } from "./routeType";
+import { JSX } from "react/jsx-runtime";
 
 export default DataNotebook;
 
-function DataNotebook() {
+function DataNotebook(): JSX.Element {
   const [urlSearchParams] = useSearchParams();
   const notebook = useLoaderData<NotebookLoaderData>();
 

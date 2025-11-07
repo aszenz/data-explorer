@@ -28,6 +28,7 @@ import SqlNativeIcon from "../img/sql-database.svg?react";
 import StringIcon from "../img/string.svg?react";
 import TimeIcon from "../img/time.svg?react";
 import UnknownIcon from "../img/unknown.svg?react";
+import { JSX } from "react/jsx-runtime";
 
 export { SchemaRenderer };
 export type { SchemaRendererProps };
@@ -35,10 +36,10 @@ export type { SchemaRendererProps };
 type SchemaRendererProps = {
   explores: Explore[];
   queries: NamedQuery[];
-  onFieldClick?: (field: Field) => void;
-  onQueryClick?: (query: NamedQuery | QueryField) => void;
-  onPreviewClick?: (explore: Explore) => void;
-  onExploreClick?: (explore: Explore) => void;
+  onFieldClick: (_field: Field) => void | Promise<void>;
+  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
+  onPreviewClick: (_explore: Explore) => void | Promise<void>;
+  onExploreClick: (_explore: Explore) => void | Promise<void>;
   defaultShow: boolean;
 };
 
@@ -50,7 +51,7 @@ function SchemaRenderer({
   onPreviewClick,
   onExploreClick,
   defaultShow,
-}: SchemaRendererProps) {
+}: SchemaRendererProps): JSX.Element {
   const hidden = !defaultShow;
 
   return (
@@ -88,85 +89,53 @@ function SchemaRenderer({
 type FieldItemProps = {
   field: Field;
   path: string;
-  onFieldClick?: (field: Field) => void;
+  onFieldClick: (_field: Field) => void | Promise<void>;
 };
 
 function FieldItem({ field, path, onFieldClick }: FieldItemProps) {
-  const context = {
-    webviewSection: "malloySchemaField",
-    ...fieldContext(field),
-  };
-
-  const onClick = () => {
-    onFieldClick?.(field);
-  };
-
-  const clickable = onFieldClick ? "clickable" : "";
-
   return (
-    <div
-      className={`field ${clickable}`}
+    <button
+      type="button"
+      className={`field clickable`}
       title={buildTitle(field, path)}
-      onClick={onClick}
-      data-vscode-context={JSON.stringify(context)}
+      onClick={() => void onFieldClick(field)}
     >
       {getIconElement(fieldType(field), isFieldAggregate(field))}
       <span className="field_name">{field.name}</span>
-    </div>
+    </button>
   );
 }
 
 type QueryItemProps = {
   query: NamedQuery | QueryField;
   path: string;
-  onQueryClick?: (query: NamedQuery | QueryField) => void;
+  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
 };
 
-const QueryItem = ({ query, path, onQueryClick }: QueryItemProps) => {
-  const onClick = () => {
-    onQueryClick?.(query);
-  };
-
-  const clickable = onQueryClick ? "clickable" : "";
-  let context: Record<string, unknown> = {};
-
-  if ("parentExplore" in query) {
-    context = {
-      webviewSection: "malloySchemaQuery",
-      ...fieldContext(query),
-    };
-  } else {
-    context = {
-      webviewSection: "malloySchemaNamedQuery",
-      name: query.name,
-      location: query.location,
-      preventDefaultContextMenuItems: true,
-    };
-  }
-
+function QueryItem({ query, path, onQueryClick }: QueryItemProps) {
   const title = `${query.name}\nPath: ${path}${path ? "." : ""}${query.name}`;
 
   return (
-    <div
-      className={`field ${clickable}`}
-      onClick={onClick}
-      data-vscode-context={JSON.stringify(context)}
+    <button
+      type="button"
+      className={`field clickable`}
+      onClick={() => void onQueryClick(query)}
     >
       {getIconElement("query", false)}
       <span title={title} className="field_name">
         {query.name}
       </span>
-    </div>
+    </button>
   );
-};
+}
 
 type StructItemProps = {
   explore: Explore;
   path: string;
-  onFieldClick?: (field: Field) => void;
-  onQueryClick?: (query: NamedQuery | QueryField) => void;
-  onPreviewClick?: (explore: Explore) => void;
-  onExploreClick?: (explore: Explore) => void;
+  onFieldClick: (_field: Field) => void | Promise<void>;
+  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
+  onPreviewClick: (_explore: Explore) => void | Promise<void>;
+  onExploreClick: (_explore: Explore) => void | Promise<void>;
   startHidden: boolean;
 };
 
@@ -188,51 +157,19 @@ function StructItem({
   const onClickingPreview = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    onPreviewClick?.(explore);
+    return onPreviewClick(explore);
   };
 
   const onClickingExplore = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    onExploreClick?.(explore);
+    return onExploreClick(explore);
   };
-
-  function fieldList(fields: Field[], path: string) {
-    return (
-      <div className="field_list">
-        {fields.map((field) =>
-          field.isQueryField() ? (
-            <QueryItem
-              key={field.name}
-              query={field}
-              path={path}
-              onQueryClick={onQueryClick}
-            />
-          ) : (
-            <FieldItem
-              key={field.name}
-              field={field}
-              path={path}
-              onFieldClick={onFieldClick}
-            />
-          ),
-        )}
-      </div>
-    );
-  }
 
   const subtype = exploreSubtype(explore);
   const { queries, dimensions, measures, explores } = bucketFields(
     explore.allFields,
   );
-
-  const buildPath = (explore: Explore, path: string): string => {
-    if (path) {
-      return `${path}.${explore.name}`;
-    } else {
-      return explore.name;
-    }
-  };
 
   const classes = `schema ${hidden ? "hidden" : ""}`;
 
@@ -248,44 +185,44 @@ function StructItem({
         </span>
         {getIconElement(`struct_${subtype}`, false)}
         <b className="explore_name">{getExploreName(explore, path)}</b>
-        {onPreviewClick ? (
-          <span className="preview" onClick={onClickingPreview}>
-            {" "}
-            Preview{" "}
-          </span>
-        ) : null}
-        {onExploreClick ? (
-          <span className="preview" onClick={onClickingExplore}>
-            {" "}
-            Explore{" "}
-          </span>
-        ) : null}
+        <button
+          type="button"
+          className="preview"
+          onClick={(e) => {
+            void onClickingPreview(e);
+          }}
+        >
+          Preview
+        </button>
+        <button
+          type="button"
+          className="preview"
+          onClick={(e) => {
+            void onClickingExplore(e);
+          }}
+        >
+          Explore
+        </button>
       </div>
       <ul>
         {queries.length ? (
           <li className="fields">
             <label>Views</label>
-            {fieldList(queries, path)}
-          </li>
-        ) : null}
-        {dimensions.length ? (
-          <li className="fields">
-            <label>Dimensions</label>
-            {fieldList(dimensions, path)}
+            {fieldList(queries, path, onQueryClick, onFieldClick)}
           </li>
         ) : null}
         {measures.length ? (
           <li className="fields">
             <label>Measures</label>
-            {fieldList(measures, path)}
+            {fieldList(measures, path, onQueryClick, onFieldClick)}
           </li>
         ) : null}
         {explores.length
-          ? explores.map((explore) => (
+          ? explores.map((exp) => (
               <StructItem
-                key={explore.name}
-                explore={explore}
-                path={buildPath(explore, path)}
+                key={exp.name}
+                explore={exp}
+                path={buildPath(exp, path)}
                 onFieldClick={onFieldClick}
                 onPreviewClick={onPreviewClick}
                 onQueryClick={onQueryClick}
@@ -294,26 +231,58 @@ function StructItem({
               />
             ))
           : null}
+        {dimensions.length ? (
+          <li className="fields">
+            <label>Dimensions</label>
+            {fieldList(dimensions, path, onQueryClick, onFieldClick)}
+          </li>
+        ) : null}
       </ul>
     </li>
   );
 }
 
-const sortByName = (a: { name: string }, b: { name: string }) =>
-  a.name.localeCompare(b.name);
+function fieldList(
+  fields: Field[],
+  path: string,
+  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>,
+  onFieldClick: (_field: Field) => void | Promise<void>,
+) {
+  return (
+    <div className="field_list">
+      {fields.map((field) =>
+        field.isQueryField() ? (
+          <QueryItem
+            key={field.name}
+            query={field}
+            path={path}
+            onQueryClick={onQueryClick}
+          />
+        ) : (
+          <FieldItem
+            key={field.name}
+            field={field}
+            path={path}
+            onFieldClick={onFieldClick}
+          />
+        ),
+      )}
+    </div>
+  );
+}
 
-const fieldContext = (field: Field) => {
-  const { fieldPath: accessPath, location, name } = field;
-  const topLevelExplore = accessPath.shift();
+function buildPath(explore: Explore, path: string): string {
+  if (path) {
+    return `${path}.${explore.name}`;
+  } else {
+    return explore.name;
+  }
+}
 
-  return {
-    accessPath,
-    location,
-    name,
-    topLevelExplore,
-    preventDefaultContextMenuItems: true,
-  };
-};
+function sortByName(a: { name: string }, b: { name: string }): number {
+  return a.name.localeCompare(b.name);
+}
+
 /**
  * Bucket fields by type and sort by name.
  *
@@ -322,7 +291,12 @@ const fieldContext = (field: Field) => {
  *   measures and explores/sources, sorted by name
  */
 
-function bucketFields(fields: Field[]) {
+function bucketFields(fields: Field[]): {
+  queries: Field[];
+  dimensions: Field[];
+  measures: Field[];
+  explores: Explore[];
+} {
   const queries: Field[] = [];
   const dimensions: Field[] = [];
   const measures: Field[] = [];
@@ -359,16 +333,16 @@ function bucketFields(fields: Field[]) {
 /**
  * Returns the corresponding icon for fields and relationships.
  *
- * @param fieldType Field type and returned by fieldType()
+ * @param elementType Field type and returned by fieldType()
  * @param isAggregate Field aggregate status as returned from isFieldAggregate()
  * @returns A React wrapped svg of the icon.
  */
-function getIconElement(fieldType: string, isAggregate: boolean) {
+function getIconElement(elementType: string, isAggregate: boolean) {
   let imageElement: React.JSX.Element | null;
   if (isAggregate) {
     imageElement = <NumberAggregateIcon />;
   } else {
-    switch (fieldType) {
+    switch (elementType) {
       case "array":
         imageElement = <ArrayIcon />;
         break;

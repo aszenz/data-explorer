@@ -1,4 +1,4 @@
-import { NotebookCell, ParsedNotebook } from "./notebook-types";
+import type { NotebookCell, ParsedNotebook } from "./notebook-types";
 
 /**
  * Parse a .malloynb file content into structured notebook cells
@@ -27,7 +27,7 @@ export function parseNotebook(content: string): ParsedNotebook {
   }
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i] ?? "";
     const trimmedLine = line.trim();
 
     if (trimmedLine.startsWith(">>>malloy")) {
@@ -81,7 +81,7 @@ function extractMetadata(cells: NotebookCell[]): { title?: string } {
   if (firstMarkdownCell) {
     const titleMatch = firstMarkdownCell.content.match(/^#\s+(.+)$/m);
     if (titleMatch) {
-      metadata.title = titleMatch[1].trim();
+      metadata.title = titleMatch[1]?.trim();
     }
   }
 

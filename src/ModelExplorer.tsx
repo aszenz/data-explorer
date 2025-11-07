@@ -1,10 +1,11 @@
 import { Link, useParams } from "react-router";
 import { useRuntime } from "./contexts";
 import SourceExplorer from "./SourceExplorer";
+import { JSX } from "react/jsx-runtime";
 
 export default ModelExplorer;
 
-function ModelExplorer() {
+function ModelExplorer(): JSX.Element {
   const { model } = useRuntime();
   const urlParams = useParams();
   const modelName = urlParams.model;
@@ -45,7 +46,7 @@ function ModelExplorer() {
           </>
         )}
       </div>
-      <SourceExplorer key={sourceName} sourceName={sourceName} />
+      <SourceExplorer key={sourceName} />
     </div>
   );
 }
