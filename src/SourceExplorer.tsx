@@ -124,6 +124,7 @@ function serializeQueryToUrl(
   }
 
   newSearchParams.set("run", "true");
+  newSearchParams.delete("load");
 
   if (newSearchParams.toString() !== searchParams.toString()) {
     return newSearchParams;

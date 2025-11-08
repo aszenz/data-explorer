@@ -1,6 +1,6 @@
 import type { Location } from "react-router";
+import { Navigation } from "react-router";
 import { Link, useNavigation, Outlet } from "react-router";
-import { useEffect } from "react";
 import { JSX } from "react/jsx-runtime";
 
 export default SharedLayout;
@@ -11,10 +11,6 @@ type SharedLayoutProps = {
 };
 function SharedLayout({ models, notebooks }: SharedLayoutProps): JSX.Element {
   const { state, location } = useNavigation();
-  useEffect(() => {
-    window.parent.document.title = document.title;
-    window.parent.postMessage("urlChanged", window.location.origin);
-  });
   return (
     <>
       <nav>
@@ -62,15 +58,20 @@ function SharedLayout({ models, notebooks }: SharedLayoutProps): JSX.Element {
           </li>
         </ul>
       </nav>
-      {"loading" === state && !isExplorerPath(location) ? (
-        "Loading...."
-      ) : (
-        <Outlet />
-      )}
+      {showLoader(state, location) ? "Loading...." : <Outlet />}
     </>
   );
 }
 
-function isExplorerPath(location: undefined | Location) {
-  return location?.pathname.includes("/explorer/");
+function showLoader(
+  state: Navigation["state"],
+  location: undefined | Location,
+) {
+  const urlSearchParams = new URLSearchParams(location?.search);
+  if (true === location?.pathname.includes("explorer")) {
+    // Only show loader when going into explorer page, since it has it's own loader for query change navigation
+    // When linking to explorer page from outside, we set the `load` query parameter
+    return "loading" === state && urlSearchParams.has("load");
+  }
+  return "loading" === state;
 }

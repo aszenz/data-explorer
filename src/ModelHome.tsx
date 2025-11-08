@@ -26,13 +26,13 @@ function ModelHome(): JSX.Element {
           if (field.isAtomicField() && field.isCalculation()) {
             const queryString = `run: ${quoteIfNecessary(sourceName)}->{ aggregate: ${quoteIfNecessary(field.name)} }`;
             return navigate(
-              `explorer/${sourceName}?query=${queryString}&run=true`,
+              `explorer/${sourceName}?query=${queryString}&run=true&load=true`,
             );
           }
           if (field.isAtomicField()) {
             const queryString = `run: ${quoteIfNecessary(sourceName)}->{ group_by: ${quoteIfNecessary(field.name)} }`;
             return navigate(
-              `explorer/${sourceName}?query=${queryString}&run=true`,
+              `explorer/${sourceName}?query=${queryString}&run=true&load=true`,
             );
           }
         }}
@@ -41,7 +41,9 @@ function ModelHome(): JSX.Element {
           if ("parentExplore" in query) {
             const source = query.parentExplore.name;
             const queryString = `run: ${quoteIfNecessary(source)}->${quoteIfNecessary(query.name)}`;
-            return navigate(`explorer/${source}?query=${queryString}&run=true`);
+            return navigate(
+              `explorer/${source}?query=${queryString}&run=true&load=true`,
+            );
           }
           return navigate(`query/${query.name}`);
         }}

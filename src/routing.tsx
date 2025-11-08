@@ -80,29 +80,34 @@ function createAppRouter({
   async function loadAndCacheSource(
     modelName: string,
     sourceName: string,
+    includeTopValues: boolean,
   ): Promise<SourceCache> {
     const cachedModel = await loadAndCacheModel(modelName);
+    const cacheKey = `${modelName}:${sourceName}:${includeTopValues ? "includeTopValues" : ""}`;
 
     const source =
-      cachedModel.sources.get(sourceName) ??
+      cachedModel.sources.get(cacheKey) ??
       (await (async () => {
         console.log(`Loading source ${sourceName}`);
         const sourceInfo = getSourceInfo(
           cachedModel.model._modelDef,
           sourceName,
         );
-        const topValues =
-          (await cachedModel.modelMaterializer.searchValueMap(
-            sourceName,
-            10,
-          )) ?? [];
+        console.time("Loading top values");
+        const topValues = includeTopValues
+          ? ((await cachedModel.modelMaterializer.searchValueMap(
+              sourceName,
+              10,
+            )) ?? [])
+          : [];
+        console.timeEnd("Loading top values");
         const sourceCache = {
           info: sourceInfo,
           topValues,
           queryCache: new Map(),
           resultCache: new Map(),
         };
-        cachedModel.sources.set(sourceName, sourceCache);
+        cachedModel.sources.set(cacheKey, sourceCache);
         return sourceCache;
       })());
     return source;
@@ -231,12 +236,15 @@ function createAppRouter({
                   const urlSearchParams = new URL(request.url).searchParams;
                   const querySrcParam = urlSearchParams.get("query");
                   const runQueryParam = urlSearchParams.get("run");
+                  const includeTopValues =
+                    urlSearchParams.get("includeTopValues") === "true";
 
                   const { modelMaterializer } =
                     await loadAndCacheModel(modelName);
                   const source = await loadAndCacheSource(
                     modelName,
                     sourceName,
+                    includeTopValues,
                   );
                   const parsedQuery =
                     null === querySrcParam

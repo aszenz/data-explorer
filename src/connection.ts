@@ -86,6 +86,7 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
       .map((row: { [columnName: string]: string }) => Object.values(row)[0]);
     // TODO: Don't load the full table for describe queries
     // Describe queries are used to load the schema of the table
+    console.time("Setting up datasources");
     await Promise.all(
       tablesRequiredForQueryExecution
         .filter((table) => !alreadyLoadedTables.includes(table))
@@ -102,7 +103,11 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
           );
         }),
     );
-    return super.runDuckDBQuery(sql, abortSignal);
+    console.timeEnd("Setting up datasources");
+    console.time("Running query");
+    const result = await super.runDuckDBQuery(sql, abortSignal);
+    console.timeEnd("Running query");
+    return result;
   }
 
   /**
@@ -128,7 +133,7 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
           await fileContent.text(),
         );
         await this.connection.query(
-          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
+          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
         );
         break;
       case "xlsx":
@@ -137,7 +142,7 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
           new Uint8Array(await fileContent.arrayBuffer()),
         );
         await this.connection.query(
-          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
+          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
         );
         break;
       case "parquet":
@@ -147,7 +152,7 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
           new Uint8Array(await fileContent.arrayBuffer()),
         );
         await this.connection.query(
-          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
+          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
         );
         break;
 
@@ -160,11 +165,11 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
         );
         if (fileType === "json") {
           await this.connection.query(
-            `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
+            `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
           );
         } else {
           await this.connection.query(
-            `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
+            `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
           );
         }
         break;
