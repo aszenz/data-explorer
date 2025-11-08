@@ -18,13 +18,13 @@ function App(): JSX.Element {
   );
 }
 
-const modelsCode = import.meta.glob("/models/**/*.malloy", {
+const modelsCode = import.meta.glob("/models/*.malloy", {
   query: "?raw",
   eager: true,
   import: "default",
 });
 
-const notebooksCode = import.meta.glob("/models/**/*.malloynb", {
+const notebooksCode = import.meta.glob("/models/*.malloynb", {
   query: "?raw",
   eager: true,
   import: "default",

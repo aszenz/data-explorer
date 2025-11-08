@@ -81,11 +81,13 @@ const config: PlaywrightTestConfig = defineConfig({
   ...(process.env["URL"]
     ? {}
     : {
-        command: process.env["CI"] ? "npm run start" : "npm run dev",
-        url: process.env["CI"]
-          ? "http://localhost:3000"
-          : "http://localhost:5173",
-        reuseExistingServer: !process.env["CI"],
+        webServer: {
+          command: process.env["CI"] ? "npm run start" : "npm run dev",
+          url: process.env["CI"]
+            ? "http://localhost:3000"
+            : "http://localhost:5173",
+          reuseExistingServer: !process.env["CI"],
+        },
       }),
 });
 
