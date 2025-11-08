@@ -93,7 +93,12 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
         .map(async (table) => {
           const datasetContents = await this.getDataset(table);
           if (null === datasetContents) {
-            throw new Error(`Dataset ${table} not found`);
+            console.info(
+              `Dataset ${table} not found in local files, installing httpfs to load it directly, assuming it's a duckdb supported uri`,
+            );
+            await this.connection?.query("install httpfs");
+            await this.connection?.query("load httpfs");
+            return;
           }
 
           await this._loadDataFromFile(

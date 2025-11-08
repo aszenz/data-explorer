@@ -60,14 +60,19 @@ async function getDataset(
   datasetName: string,
 ): Promise<null | { data: Blob; fileType: SupportedFileType }> {
   console.log(`Fetching dataset: ${datasetName}`);
-  const fileType = getFileType(datasetName);
-  const datasetUrl = dataSources[datasetNameToDatasourcePath(datasetName)];
-  if (typeof datasetUrl !== "string") {
-    throw new Error(`Invalid URL for dataset: ${datasetName}`);
+  const datasetPath = datasetNameToDatasourcePath(datasetName);
+  if (datasetPath in dataSources) {
+    const datasetUrl = dataSources[datasetPath];
+    if (typeof datasetUrl !== "string") {
+      throw new Error(`Invalid URL for dataset: ${datasetName}`);
+    }
+    const response = await fetch(datasetUrl);
+    const data = await response.blob();
+    const fileType = getFileType(datasetName);
+    return { data, fileType };
   }
-  const response = await fetch(datasetUrl);
-  const data = await response.blob();
-  return { data, fileType };
+  console.warn(`Data ${datasetName} not found in local files`);
+  return null;
 }
 
 function getNotebooks(): Record<string, string> {
