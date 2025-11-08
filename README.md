@@ -1,8 +1,8 @@
 # Data explorer
 
-Explore semantic data models written in malloy.
+Explore semantic data models written in [malloy](https://www.malloydata.dev/).
 
-A static site for sharing data explorations.
+A static site builder for sharing data explorations.
 
 ## Demo Examples
 
