@@ -7,7 +7,7 @@ export default QueryResult;
 
 function QueryResult(): JSX.Element {
   const urlParams = useParams();
-  const queryName = urlParams.query;
+  const queryName = urlParams["query"];
   const result = useLoaderData<PreparedQueryLoaderData>();
   return (
     <div>

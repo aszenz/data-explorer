@@ -50,6 +50,7 @@ function SourceExplorer(): JSX.Element {
   }, [routeData.parsedQuery]);
 
   return (
+    /* @ts-expect-error Exact Optional Type is wrong from lib */
     <MalloyExplorerProvider
       source={routeData.sourceInfo}
       query={draftQuery}
@@ -96,6 +97,7 @@ function SourceExplorer(): JSX.Element {
             <QueryPanel runQuery={runQuery} />
           </ResizableCollapsiblePanel>
           <div style={{ height: "100%", flex: "1 1 auto" }}>
+            {/* @ts-expect-error Exact optional type is wrong from lib */}
             <ResultPanel
               source={routeData.sourceInfo}
               draftQuery={draftQuery}

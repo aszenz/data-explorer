@@ -8,8 +8,8 @@ export default ModelExplorer;
 function ModelExplorer(): JSX.Element {
   const { model } = useRuntime();
   const urlParams = useParams();
-  const modelName = urlParams.model;
-  const sourceName = urlParams.source;
+  const modelName = urlParams["model"];
+  const sourceName = urlParams["source"];
   if (undefined === modelName || undefined === sourceName) {
     throw new Error("Source name is required");
   }

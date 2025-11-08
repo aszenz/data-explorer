@@ -81,7 +81,7 @@ function extractMetadata(cells: NotebookCell[]): { title?: string } {
   if (firstMarkdownCell) {
     const titleMatch = firstMarkdownCell.content.match(/^#\s+(.+)$/m);
     if (titleMatch) {
-      metadata.title = titleMatch[1]?.trim();
+      metadata.title = titleMatch[1]?.trim() ?? "";
     }
   }
 
