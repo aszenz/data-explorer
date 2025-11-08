@@ -10,7 +10,6 @@ function App(): JSX.Element {
   return (
     <RouterProvider
       router={createAppRouter({
-        basename: "/",
         models: getModels(),
         notebooks: getNotebooks(),
         getDataset,

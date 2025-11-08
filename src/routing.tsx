@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createHashRouter } from "react-router";
 import type * as MalloyInterface from "@malloydata/malloy-interfaces";
 import type { SubmittedQuery } from "@malloydata/malloy-explorer";
 import type * as malloy from "@malloydata/malloy";
@@ -40,18 +40,16 @@ type ModelCache = {
 };
 type ModelsCache = Map<string, ModelCache>;
 
-type InsightsRouterOptions = {
-  basename: string;
+type RouterOptions = {
   models: Record<string, string>;
   notebooks: Record<string, string>;
   getDataset: GetDataset;
 };
 function createAppRouter({
-  basename,
   models,
   notebooks,
   getDataset,
-}: InsightsRouterOptions): ReturnType<typeof createBrowserRouter> {
+}: RouterOptions): ReturnType<typeof createHashRouter> {
   const { runtime, getModelURL } = setupMalloyRuntime({
     getDataset,
     models,
@@ -166,169 +164,166 @@ function createAppRouter({
     };
   }
 
-  return createBrowserRouter(
-    [
-      {
-        path: "/",
-        element: <SharedLayout notebooks={notebooks} models={models} />,
-        errorElement: <ErrorBoundary />,
-        hydrateFallbackElement: <div>Loading app...</div>,
-        children: [
-          {
-            index: true,
-            element: <Home notebooks={notebooks} models={models} />,
+  return createHashRouter([
+    {
+      path: "/",
+      element: <SharedLayout notebooks={notebooks} models={models} />,
+      errorElement: <ErrorBoundary />,
+      hydrateFallbackElement: <div>Loading app...</div>,
+      children: [
+        {
+          index: true,
+          element: <Home notebooks={notebooks} models={models} />,
+        },
+        {
+          id: "model",
+          path: "model/:model",
+          loader: async ({
+            params,
+          }): Promise<RouteTypes.ModelHomeLoaderData> => {
+            if (undefined === params["model"]) {
+              throw new Error("Model name is required");
+            }
+            return getRuntimeSetup(params["model"]);
           },
-          {
-            id: "model",
-            path: "model/:model",
-            loader: async ({
-              params,
-            }): Promise<RouteTypes.ModelHomeLoaderData> => {
-              if (undefined === params["model"]) {
-                throw new Error("Model name is required");
-              }
-              return getRuntimeSetup(params["model"]);
+          children: [
+            {
+              index: true,
+              element: <ModelHome />,
             },
-            children: [
-              {
-                index: true,
-                element: <ModelHome />,
+            {
+              path: "preview/:source",
+              loader: async ({
+                params,
+              }): Promise<RouteTypes.PreviewSourceLoaderData> => {
+                const { model: modelName, source } = params;
+                if (undefined === modelName) {
+                  throw new Error("Model name is required");
+                }
+                if (undefined === source) {
+                  throw new Error("Source name is required");
+                }
+                const { modelMaterializer } =
+                  await loadAndCacheModel(modelName);
+                const output = await executeMalloyQuery(
+                  modelMaterializer,
+                  `run: ${source} -> {select: *; limit: 50}`,
+                );
+                const queryResult = output.response?.result;
+                if (undefined === queryResult) {
+                  throw new Error("Error running query");
+                }
+                return queryResult;
               },
-              {
-                path: "preview/:source",
-                loader: async ({
-                  params,
-                }): Promise<RouteTypes.PreviewSourceLoaderData> => {
-                  const { model: modelName, source } = params;
-                  if (undefined === modelName) {
-                    throw new Error("Model name is required");
-                  }
-                  if (undefined === source) {
-                    throw new Error("Source name is required");
-                  }
-                  const { modelMaterializer } =
-                    await loadAndCacheModel(modelName);
-                  const output = await executeMalloyQuery(
-                    modelMaterializer,
-                    `run: ${source} -> {select: *; limit: 50}`,
-                  );
-                  const queryResult = output.response?.result;
-                  if (undefined === queryResult) {
-                    throw new Error("Error running query");
-                  }
-                  return queryResult;
-                },
-                element: <PreviewResult />,
-              },
-              {
-                path: "explorer/:source",
-                loader: async ({
-                  request,
-                  params,
-                }): Promise<RouteTypes.SourceExplorerLoaderData> => {
-                  const { model: modelName, source: sourceName } = params;
-                  if (undefined === modelName) {
-                    throw new Error("Model name is required");
-                  }
-                  if (undefined === sourceName) {
-                    throw new Error("Source name is required");
-                  }
-                  const urlSearchParams = new URL(request.url).searchParams;
-                  const querySrcParam = urlSearchParams.get("query");
-                  const runQueryParam = urlSearchParams.get("run");
-                  const includeTopValues =
-                    urlSearchParams.get("includeTopValues") === "true";
+              element: <PreviewResult />,
+            },
+            {
+              path: "explorer/:source",
+              loader: async ({
+                request,
+                params,
+              }): Promise<RouteTypes.SourceExplorerLoaderData> => {
+                const { model: modelName, source: sourceName } = params;
+                if (undefined === modelName) {
+                  throw new Error("Model name is required");
+                }
+                if (undefined === sourceName) {
+                  throw new Error("Source name is required");
+                }
+                const urlSearchParams = new URL(request.url).searchParams;
+                const querySrcParam = urlSearchParams.get("query");
+                const runQueryParam = urlSearchParams.get("run");
+                const includeTopValues =
+                  urlSearchParams.get("includeTopValues") === "true";
 
-                  const { modelMaterializer } =
-                    await loadAndCacheModel(modelName);
-                  const source = await loadAndCacheSource(
-                    modelName,
-                    sourceName,
-                    includeTopValues,
-                  );
-                  const parsedQuery =
-                    null === querySrcParam
-                      ? undefined
-                      : loadAndCacheMalloyQuery(source, querySrcParam);
-                  const submittedQuery =
-                    "true" === runQueryParam && null !== querySrcParam
-                      ? await loadAndCacheMalloyQueryResult(
-                          source,
-                          modelMaterializer,
-                          parsedQuery,
-                          querySrcParam,
-                        )
-                      : undefined;
-                  console.info("SourceExplorer loader");
-                  return {
-                    sourceInfo: source.info,
-                    topValues: source.topValues,
-                    parsedQuery,
-                    submittedQuery,
-                  };
-                },
-                element: <ModelExplorer />,
+                const { modelMaterializer } =
+                  await loadAndCacheModel(modelName);
+                const source = await loadAndCacheSource(
+                  modelName,
+                  sourceName,
+                  includeTopValues,
+                );
+                const parsedQuery =
+                  null === querySrcParam
+                    ? undefined
+                    : loadAndCacheMalloyQuery(source, querySrcParam);
+                const submittedQuery =
+                  "true" === runQueryParam && null !== querySrcParam
+                    ? await loadAndCacheMalloyQueryResult(
+                        source,
+                        modelMaterializer,
+                        parsedQuery,
+                        querySrcParam,
+                      )
+                    : undefined;
+                console.info("SourceExplorer loader");
+                return {
+                  sourceInfo: source.info,
+                  topValues: source.topValues,
+                  parsedQuery,
+                  submittedQuery,
+                };
               },
-              {
-                path: "query/:query",
-                loader: async ({
-                  params,
-                }): Promise<RouteTypes.PreparedQueryLoaderData> => {
-                  const { model: modelName, query: queryName } = params;
-                  if (undefined === modelName) {
-                    throw new Error("Model name is required");
-                  }
-                  if (undefined === queryName) {
-                    throw new Error("Query is required");
-                  }
-                  const { model } = await getRuntimeSetup(modelName);
-                  return executeMalloyPreparedQuery(runtime, model, queryName);
-                },
-                element: <QueryResult />,
+              element: <ModelExplorer />,
+            },
+            {
+              path: "query/:query",
+              loader: async ({
+                params,
+              }): Promise<RouteTypes.PreparedQueryLoaderData> => {
+                const { model: modelName, query: queryName } = params;
+                if (undefined === modelName) {
+                  throw new Error("Model name is required");
+                }
+                if (undefined === queryName) {
+                  throw new Error("Query is required");
+                }
+                const { model } = await getRuntimeSetup(modelName);
+                return executeMalloyPreparedQuery(runtime, model, queryName);
               },
-            ],
-          },
-          {
-            path: "notebook/:notebook",
-            element: <DataNotebook />,
-            shouldRevalidate: (arg) => {
-              // Prevent revalidation on search param changes
-              if (arg.currentUrl.pathname === arg.nextUrl.pathname) {
-                return false;
-              }
-              return arg.defaultShouldRevalidate;
+              element: <QueryResult />,
             },
-            loader: async ({
-              params,
-            }): Promise<RouteTypes.NotebookLoaderData> => {
-              const { notebook } = params;
-              if (undefined === notebook) {
-                throw new Error("Notebook name is required");
-              }
-              const notebookCode = getNotebookCode(notebooks, notebook);
-              if (null === notebookCode) {
-                throw new Error(`Notebook ${notebook} not found`);
-              }
-              // Validate and parse the notebook content
-              const validation = validateNotebook(notebookCode);
-              if (!validation.valid) {
-                throw new Error(validation.errors.join(","));
-              }
-              const parsed = parseNotebook(notebookCode);
-              const output = await executeNotebook(
-                getRuntimeSetup,
-                notebook,
-                parsed,
-              );
-              // if (undefined !== output.metadata.title) {
-              //   document.title = output.metadata.title;
-              // }
-              return output;
-            },
+          ],
+        },
+        {
+          path: "notebook/:notebook",
+          element: <DataNotebook />,
+          shouldRevalidate: (arg) => {
+            // Prevent revalidation on search param changes
+            if (arg.currentUrl.pathname === arg.nextUrl.pathname) {
+              return false;
+            }
+            return arg.defaultShouldRevalidate;
           },
-        ],
-      },
-    ],
-    { basename },
-  );
+          loader: async ({
+            params,
+          }): Promise<RouteTypes.NotebookLoaderData> => {
+            const { notebook } = params;
+            if (undefined === notebook) {
+              throw new Error("Notebook name is required");
+            }
+            const notebookCode = getNotebookCode(notebooks, notebook);
+            if (null === notebookCode) {
+              throw new Error(`Notebook ${notebook} not found`);
+            }
+            // Validate and parse the notebook content
+            const validation = validateNotebook(notebookCode);
+            if (!validation.valid) {
+              throw new Error(validation.errors.join(","));
+            }
+            const parsed = parseNotebook(notebookCode);
+            const output = await executeNotebook(
+              getRuntimeSetup,
+              notebook,
+              parsed,
+            );
+            // if (undefined !== output.metadata.title) {
+            //   document.title = output.metadata.title;
+            // }
+            return output;
+          },
+        },
+      ],
+    },
+  ]);
 }

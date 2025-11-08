@@ -6,7 +6,7 @@ import svgr from "vite-plugin-svgr";
 // https://vite.dev/config/
 const config: UserConfig = defineConfig({
   // NOTE: THIS PATH MUST END WITH A TRAILING SLASH
-  base: process.env["BASE_PUBLIC_PATH"] ?? "",
+  base: process.env["BASE_PUBLIC_PATH"] ?? "/",
   plugins: [react(), svgr()],
   define: {
     "process.env": {},
