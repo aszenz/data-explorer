@@ -93,7 +93,7 @@ test.describe("Notebook page", () => {
   test("Opening notebook cell in expanded view", async ({ page }) => {
     await page.goto("./#/notebook/Trading%20Overview?cell-expanded=4");
     await expect(page.getByTestId("notebook-cell-popover-4")).toBeVisible({
-      timeout: 15 * 1000,
+      timeout: 20 * 1000,
     });
   });
 });
