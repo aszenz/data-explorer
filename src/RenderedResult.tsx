@@ -1,7 +1,7 @@
 import type * as malloyInterfaces from "@malloydata/malloy-interfaces";
 import { useEffect, useMemo, useRef } from "react";
 import { MalloyRenderer } from "@malloydata/render";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default RenderedResult;
 

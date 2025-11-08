@@ -1,7 +1,7 @@
 import type { Location } from "react-router";
-import { Navigation } from "react-router";
+import type { Navigation } from "react-router";
 import { Link, useNavigation, Outlet } from "react-router";
-import { JSX } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 
 export default SharedLayout;
 

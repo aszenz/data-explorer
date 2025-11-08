@@ -13,7 +13,7 @@ import {
 } from "@malloydata/malloy-explorer";
 import "@malloydata/malloy-explorer/styles.css";
 import type { SourceExplorerLoaderData } from "./routeType";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default SourceExplorer;
 

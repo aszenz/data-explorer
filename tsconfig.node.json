@@ -10,6 +10,7 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "isolatedDeclarations": true,
     "incremental": true,

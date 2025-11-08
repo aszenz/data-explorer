@@ -1,6 +1,6 @@
 import { useRouteLoaderData } from "react-router";
 import type { ModelHomeLoaderData } from "./routeType";
-import { RuntimeSetup } from "./types";
+import type { RuntimeSetup } from "./types";
 
 export { useRuntime };
 

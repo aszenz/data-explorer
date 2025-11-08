@@ -1,7 +1,7 @@
 import { useLoaderData, useParams } from "react-router";
 import RenderedResult from "./RenderedResult";
 import type { PreviewSourceLoaderData } from "./routeType";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default PreviewResult;
 

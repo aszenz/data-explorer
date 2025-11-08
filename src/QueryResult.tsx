@@ -1,7 +1,7 @@
 import { useParams, useLoaderData } from "react-router";
 import RenderedResult from "./RenderedResult";
 import type { PreparedQueryLoaderData } from "./routeType";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default QueryResult;
 

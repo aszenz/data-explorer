@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router";
 import MarkdownRenderer from "./MarkdownRenderer";
 import type { CellOutput } from "./notebook-types";
 import RenderedResult from "./RenderedResult";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default NotebookCellRenderer;
 

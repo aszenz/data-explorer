@@ -1,8 +1,8 @@
 import { RouterProvider } from "react-router";
 import "./index.css";
 import createAppRouter from "./routing";
-import { SupportedFileType } from "./connection";
-import { JSX } from "react/jsx-runtime";
+import type { SupportedFileType } from "./connection";
+import type { JSX } from "react/jsx-runtime";
 
 export default App;
 

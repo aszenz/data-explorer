@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router";
 import { useRuntime } from "./contexts";
 import SourceExplorer from "./SourceExplorer";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default ModelExplorer;
 

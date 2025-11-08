@@ -1,4 +1,4 @@
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 import NotebookCellRenderer from "./NotebookCellRenderer";
 import type { NotebookOutput } from "./notebook-types";
 

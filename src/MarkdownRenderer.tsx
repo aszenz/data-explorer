@@ -1,5 +1,5 @@
 import Markdown from "react-markdown";
-import { JSX } from "react/jsx-runtime";
+import { type JSX } from "react/jsx-runtime";
 
 export default MarkdownRenderer;
 
