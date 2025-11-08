@@ -1,5 +1,6 @@
+import { type JSX } from "react/jsx-runtime";
 import NotebookCellRenderer from "./NotebookCellRenderer";
-import { NotebookOutput } from "./notebook-types";
+import type { NotebookOutput } from "./notebook-types";
 
 export default NotebookViewer;
 export type { NotebookViewerProps };
@@ -9,7 +10,10 @@ type NotebookViewerProps = {
   showCode: boolean;
 };
 
-function NotebookViewer({ notebook, showCode = false }: NotebookViewerProps) {
+function NotebookViewer({
+  notebook,
+  showCode = false,
+}: NotebookViewerProps): JSX.Element {
   return (
     <main className="notebook">
       {notebook.cells.map((cell, index) => (

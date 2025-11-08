@@ -1,14 +1,15 @@
 import { Link, useParams } from "react-router";
 import { useRuntime } from "./contexts";
 import SourceExplorer from "./SourceExplorer";
+import { type JSX } from "react/jsx-runtime";
 
 export default ModelExplorer;
 
-function ModelExplorer() {
+function ModelExplorer(): JSX.Element {
   const { model } = useRuntime();
   const urlParams = useParams();
-  const modelName = urlParams.model;
-  const sourceName = urlParams.source;
+  const modelName = urlParams["model"];
+  const sourceName = urlParams["source"];
   if (undefined === modelName || undefined === sourceName) {
     throw new Error("Source name is required");
   }
@@ -45,7 +46,7 @@ function ModelExplorer() {
           </>
         )}
       </div>
-      <SourceExplorer key={sourceName} sourceName={sourceName} />
+      <SourceExplorer key={sourceName} />
     </div>
   );
 }

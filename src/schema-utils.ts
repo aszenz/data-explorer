@@ -3,17 +3,17 @@
  * REPO: https://github.com/malloydata/malloy-vscode-extension
  * FILE: https://github.com/malloydata/malloy-vscode-extension/blob/cde23d2459f4d7d4240d609b454cb9e8d47757e9/src/common/schema.ts
  */
-import {
+import type {
   AtomicFieldType,
   AtomicTypeDef,
   Explore,
   Field,
-  JoinRelationship,
   ModelDef,
   RepeatedRecordTypeDef,
+  SourceDef,
   StructDef,
-  isSourceDef,
 } from "@malloydata/malloy";
+import { JoinRelationship, isSourceDef } from "@malloydata/malloy";
 
 export type { ModelDef, Explore, Field };
 export {
@@ -34,7 +34,7 @@ type FieldType =
 
 type FieldSubType = "base" | "many_to_one" | "one_to_many" | "one_to_one";
 
-function isFieldAggregate(field: Field) {
+function isFieldAggregate(field: Field): boolean {
   return field.isAtomicField() && field.isCalculation();
 }
 
@@ -42,14 +42,12 @@ function fieldType(field: Field): FieldType {
   if (field.isExplore()) {
     if (field.isArray) {
       return "array";
-    } else {
-      return exploreSubtype(field);
     }
-  } else {
-    return field.isAtomicField()
-      ? (field.type as unknown as keyof typeof AtomicFieldType)
-      : "query";
+    return exploreSubtype(field);
   }
+  return field.isAtomicField()
+    ? (field.type as unknown as keyof typeof AtomicFieldType)
+    : "query";
 }
 
 function exploreSubtype(explore: Explore): FieldSubType {
@@ -108,13 +106,13 @@ function isFieldHidden(field: Field): boolean {
     const strings =
       tag
         .array("hidden")
-        ?.map((tag) => tag.text())
+        ?.map((_tag) => _tag.text())
         .filter(isStringTag) || [];
 
     const patternText = tag.text("hidden", "pattern");
     const pattern = patternText ? new RegExp(patternText) : undefined;
 
-    hidden = { strings, pattern };
+    hidden = undefined === pattern ? { strings } : { strings, pattern };
     hiddenFields.set(field.parentExplore, hidden);
   }
   return hidden.pattern?.test(name) || hidden.strings.includes(name);
@@ -126,7 +124,7 @@ function isFieldHidden(field: Field): boolean {
  * @param element A field path element
  * @returns A potentially quoted field path element
  */
-function quoteIfNecessary(element: string) {
+function quoteIfNecessary(element: string): string {
   // Quote if contains non-word characters
   if (/\W/.test(element) || RESERVED.includes(element.toUpperCase())) {
     return `\`${element}\``;
@@ -142,8 +140,11 @@ function quoteIfNecessary(element: string) {
  * @returns SourceDef for given name, or throws if not a source
  */
 
-function getSourceDef(modelDef: ModelDef, sourceName: string) {
+function getSourceDef(modelDef: ModelDef, sourceName: string): SourceDef {
   const result = modelDef.contents[sourceName];
+  if (undefined === result) {
+    throw new Error(`Source not found: ${sourceName}`);
+  }
   if (isSourceDef(result)) {
     return result;
   }
@@ -191,9 +192,8 @@ const getTypeLabel = (field: Field): string => {
   if (field.isExplore()) {
     if (field.isArray) {
       return getTypeLabelFromStructDef(field.structDef);
-    } else {
-      return "";
     }
+    return "";
   }
   const type = fieldType(field);
   if (field.isAtomicField() && field.isUnsupported()) {

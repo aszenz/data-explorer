@@ -1,4 +1,4 @@
-import { Result } from "@malloydata/malloy-interfaces";
+import type { Result } from "@malloydata/malloy-interfaces";
 
 export type {
   NotebookCell,

@@ -1,8 +1,8 @@
-import * as malloy from "@malloydata/malloy";
-import { SubmittedQuery } from "@malloydata/malloy-explorer";
-import * as MalloyInterface from "@malloydata/malloy-interfaces";
-import { RuntimeSetup } from "./types";
-import { NotebookOutput } from "./notebook-types";
+import type * as malloy from "@malloydata/malloy";
+import type { SubmittedQuery } from "@malloydata/malloy-explorer";
+import type * as MalloyInterface from "@malloydata/malloy-interfaces";
+import type { RuntimeSetup } from "./types";
+import type { NotebookOutput } from "./notebook-types";
 
 export type {
   SourceExplorerLoaderData,

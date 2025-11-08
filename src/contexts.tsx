@@ -1,9 +1,10 @@
 import { useRouteLoaderData } from "react-router";
-import { ModelHomeLoaderData } from "./routeType";
+import type { ModelHomeLoaderData } from "./routeType";
+import type { RuntimeSetup } from "./types";
 
 export { useRuntime };
 
-function useRuntime() {
+function useRuntime(): RuntimeSetup {
   const setup = useRouteLoaderData<ModelHomeLoaderData>("model");
   if (undefined === setup) {
     throw new Error("Model data not found");

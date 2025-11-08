@@ -1,5 +1,9 @@
-import { CellOutput, NotebookOutput, ParsedNotebook } from "./notebook-types";
-import { RuntimeSetup } from "./types";
+import type {
+  CellOutput,
+  NotebookOutput,
+  ParsedNotebook,
+} from "./notebook-types";
+import type { RuntimeSetup } from "./types";
 import { executeMalloyQuery } from "./helpers";
 
 export { executeNotebook };

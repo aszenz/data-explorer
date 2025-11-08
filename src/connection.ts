@@ -1,14 +1,34 @@
-import * as malloy from "@malloydata/malloy";
+import type * as malloy from "@malloydata/malloy";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { DuckDBWASMConnection } from "@malloydata/db-duckdb/wasm";
 import duckdbWasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
 import mvpWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
 import duckdbWasmEh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 import ehWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
-import { getDataset, SupportedFileType } from "./models";
 
-export class DuckDBConnection extends DuckDBWASMConnection {
-  getBundles(): duckdb.DuckDBBundles {
+export type GetDataset = (
+  _table: string,
+) => Promise<{ data: Blob; fileType: SupportedFileType } | null>;
+export type SupportedFileType =
+  | "csv"
+  | "parquet"
+  | "json"
+  | "jsonl"
+  | "ndjson"
+  | "xlsx";
+export default class DuckDBConnection extends DuckDBWASMConnection {
+  private getDataset: GetDataset;
+
+  constructor(
+    getDataset: GetDataset,
+    duckdbWasmOptions: { name: string; additionalExtensions?: string[] },
+    queryOptions: malloy.QueryOptionsReader,
+  ) {
+    super({ ...duckdbWasmOptions, motherDuckToken: undefined }, queryOptions);
+    this.getDataset = getDataset;
+  }
+
+  override getBundles(): duckdb.DuckDBBundles {
     return {
       mvp: {
         mainModule: duckdbWasm,
@@ -20,7 +40,8 @@ export class DuckDBConnection extends DuckDBWASMConnection {
       },
     };
   }
-  async init() {
+
+  override async init(): Promise<void> {
     // Select a bundle based on browser checks
     const bundle = await duckdb.selectBundle(this.getBundles());
     const logger = new duckdb.VoidLogger();
@@ -47,7 +68,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
   /**
    * Override the runDuckDBQuery method to load the required tables from the server
    */
-  protected async runDuckDBQuery(
+  protected override async runDuckDBQuery(
     sql: string,
     abortSignal?: AbortSignal,
   ): Promise<{ rows: malloy.QueryDataRow[]; totalRows: number }> {
@@ -65,16 +86,14 @@ export class DuckDBConnection extends DuckDBWASMConnection {
       .map((row: { [columnName: string]: string }) => Object.values(row)[0]);
     // TODO: Don't load the full table for describe queries
     // Describe queries are used to load the schema of the table
+    console.time("Setting up datasources");
     await Promise.all(
       tablesRequiredForQueryExecution
         .filter((table) => !alreadyLoadedTables.includes(table))
         .map(async (table) => {
-          const datasetContents = await getDataset(table);
+          const datasetContents = await this.getDataset(table);
           if (null === datasetContents) {
-            console.info(`Dataset ${table} not found, installing httpfs`);
-            await this.connection?.query("install httpfs");
-            await this.connection?.query("load httpfs");
-            return;
+            throw new Error(`Dataset ${table} not found`);
           }
 
           await this._loadDataFromFile(
@@ -84,7 +103,11 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           );
         }),
     );
-    return super.runDuckDBQuery(sql, abortSignal);
+    console.timeEnd("Setting up datasources");
+    console.time("Running query");
+    const result = await super.runDuckDBQuery(sql, abortSignal);
+    console.timeEnd("Running query");
+    return result;
   }
 
   /**
@@ -110,7 +133,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           await fileContent.text(),
         );
         await this.connection.query(
-          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
+          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
         );
         break;
       case "xlsx":
@@ -119,7 +142,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           new Uint8Array(await fileContent.arrayBuffer()),
         );
         await this.connection.query(
-          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
+          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
         );
         break;
       case "parquet":
@@ -129,7 +152,7 @@ export class DuckDBConnection extends DuckDBWASMConnection {
           new Uint8Array(await fileContent.arrayBuffer()),
         );
         await this.connection.query(
-          `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
+          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
         );
         break;
 
@@ -142,11 +165,11 @@ export class DuckDBConnection extends DuckDBWASMConnection {
         );
         if (fileType === "json") {
           await this.connection.query(
-            `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
+            `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
           );
         } else {
           await this.connection.query(
-            `CREATE OR REPLACE TABLE "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
+            `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
           );
         }
         break;

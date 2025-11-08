@@ -1,4 +1,4 @@
-import * as malloy from "@malloydata/malloy";
+import type * as malloy from "@malloydata/malloy";
 
 export type { RuntimeSetup };
 

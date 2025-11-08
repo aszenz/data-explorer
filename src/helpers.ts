@@ -1,12 +1,12 @@
 import * as malloy from "@malloydata/malloy";
-import * as MalloyInterface from "@malloydata/malloy-interfaces";
-import { DuckDBConnection } from "./connection";
-import { getModelCode, getNotebookCode } from "./models";
-import {
+import type * as MalloyInterface from "@malloydata/malloy-interfaces";
+import type {
   Message,
   QueryResponse,
   SubmittedQuery,
 } from "@malloydata/malloy-explorer";
+import type { GetDataset } from "./connection";
+import DuckDBConnection from "./connection";
 import { parseNotebook, validateNotebook } from "./notebook-parser";
 
 export {
@@ -15,13 +15,31 @@ export {
   executeMalloyQuery,
   executeMalloyPreparedQuery,
   getSourceInfo,
+  getNotebookCode,
 };
 
-function setupMalloyRuntime() {
-  const conn = new DuckDBConnection("main", undefined, undefined, {
-    // This is the default row limit of the connection (when no row limit is provided)
-    rowLimit: 10,
-  });
+type RuntimeOptions = {
+  models: Record<string, string>;
+  notebooks: Record<string, string>;
+  getDataset: GetDataset;
+};
+
+function setupMalloyRuntime({
+  models,
+  notebooks,
+  getDataset,
+}: RuntimeOptions): {
+  runtime: malloy.SingleConnectionRuntime<DuckDBConnection>;
+  getModelURL: (_modelName: string) => URL;
+} {
+  const conn = new DuckDBConnection(
+    getDataset,
+    { name: "main" },
+    {
+      // This is the default row limit of the connection (when no row limit is provided)
+      rowLimit: 10,
+    },
+  );
 
   const getModelURL = (modelName: string): URL => {
     return new URL(`http://models/${modelName}.malloy`);
@@ -40,9 +58,9 @@ function setupMalloyRuntime() {
         const name = urlToName(url);
         switch (url.origin) {
           case "http://models": {
-            const modelCode = getModelCode(name);
+            const modelCode = getModelCode(models, name);
             if (null === modelCode) {
-              const notebookCode = getNotebookCode(name);
+              const notebookCode = getNotebookCode(notebooks, name);
               if (null === notebookCode) {
                 return Promise.reject(
                   new Error(`Failed to load model: ${name}`),
@@ -78,9 +96,7 @@ async function executeMalloyQuery(
 ): Promise<SubmittedQuery> {
   const queryResolutionStartMillis = Date.now();
 
-  let response: QueryResponse = {
-    result: undefined,
-  };
+  let response: QueryResponse = {};
   try {
     const result = await compileAndRun(modelMaterializer, query);
     response.result = result;
@@ -93,7 +109,7 @@ async function executeMalloyQuery(
         content: error instanceof Error ? error.message : String(error),
       },
     ];
-    response = { result: undefined, messages };
+    response = { messages };
   }
 
   const submittedQuery = {
@@ -125,11 +141,9 @@ function parseMalloyExplorerQuery(
 ): MalloyInterface.Query | undefined {
   const { query, logs } = malloy.malloyToQuery(querySrcParam);
   if (undefined === query) {
-    console.error(`Failed to parse query from source: ${querySrcParam}`, logs);
+    console.info(`Not a malloy explorer query: ${querySrcParam}`, logs);
     return undefined;
   }
-  // Apply Manual fix for top-level annotations
-  fixMalloyQueryAnnotations(querySrcParam, query);
   return query;
 }
 
@@ -152,7 +166,10 @@ async function compileAndRun(
   try {
     const runnable = modelMaterializer.loadQuery(query);
     const rowLimit = (await runnable.getPreparedResult()).resultExplore.limit;
-    const result = await runnable.run({ rowLimit });
+    const result =
+      undefined === rowLimit
+        ? await runnable.run()
+        : await runnable.run({ rowLimit });
     return malloy.API.util.wrapResult(result);
   } catch (error) {
     return Promise.reject(error as Error);
@@ -168,33 +185,26 @@ function findSource(
   );
 }
 
-/**
- * Temp function to fix a bug upstream in malloyToQuery
- */
-function fixMalloyQueryAnnotations(
-  queryString: string,
-  malloyQuery: MalloyInterface.Query,
-) {
-  if (
-    undefined === malloyQuery.annotations ||
-    0 === malloyQuery.annotations.length
-  ) {
-    // Match annotations at the beginning of the string (before any run statement)
-    const beforeRunMatch = queryString.match(/^((?:#[^\r\n]*[\r\n]*)*)/m);
-
-    if (null !== beforeRunMatch && beforeRunMatch[1]) {
-      const annotationLines = beforeRunMatch[1]
-        .split(/[\r\n]+/)
-        .filter((line) => line.trim().startsWith("#"))
-        .map((line) => line.trim())
-        .filter((line) => line.length > 1); // Ensure it's not just "#"
-
-      if (annotationLines.length > 0) {
-        malloyQuery.annotations = annotationLines.map((line) => ({
-          value: line,
-        }));
-      }
-    }
+function getModelCode(
+  models: Record<string, string>,
+  modelName: string,
+): null | string {
+  const modelContents = models[modelName];
+  if (undefined === modelContents) {
+    console.error(`Model not found: ${modelName}`);
+    return null;
   }
-  return malloyQuery;
+  return modelContents;
+}
+
+function getNotebookCode(
+  notebooks: Record<string, string>,
+  notebookName: string,
+): null | string {
+  const notebookContents = notebooks[notebookName];
+  if (undefined === notebookContents) {
+    console.error(`Notebook not found: ${notebookName}`);
+    return null;
+  }
+  return notebookContents;
 }

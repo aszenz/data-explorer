@@ -1,28 +1,29 @@
 import { createHashRouter } from "react-router";
+import type * as MalloyInterface from "@malloydata/malloy-interfaces";
+import type { SubmittedQuery } from "@malloydata/malloy-explorer";
+import type * as malloy from "@malloydata/malloy";
 import ModelHome from "./ModelHome";
 import ModelExplorer from "./ModelExplorer";
-import * as MalloyInterface from "@malloydata/malloy-interfaces";
-import { SubmittedQuery } from "@malloydata/malloy-explorer";
 import PreviewResult from "./PreviewResult";
 import QueryResult from "./QueryResult";
 import DataNotebook from "./DataNotebook";
 import ErrorBoundary from "./ErrorBoundary";
 import SharedLayout from "./SharedLayout";
 import Home from "./Home";
-import { getNotebookCode } from "./models";
-import * as malloy from "@malloydata/malloy";
-import { parseNotebook, validateNotebook } from "./notebook-parser";
-import { executeNotebook } from "./notebook-executor";
-import { RuntimeSetup } from "./types";
-
 import {
+  getNotebookCode,
   executeMalloyPreparedQuery,
   executeMalloyQuery,
   getSourceInfo,
   parseMalloyExplorerQuery,
   setupMalloyRuntime,
 } from "./helpers";
-import * as RouteTypes from "./routeType";
+import { parseNotebook, validateNotebook } from "./notebook-parser";
+import { executeNotebook } from "./notebook-executor";
+import type { RuntimeSetup } from "./types";
+
+import type * as RouteTypes from "./routeType";
+import type { GetDataset } from "./connection";
 
 export default createAppRouter;
 
@@ -39,8 +40,21 @@ type ModelCache = {
 };
 type ModelsCache = Map<string, ModelCache>;
 
-function createAppRouter(): ReturnType<typeof createHashRouter> {
-  const { runtime, getModelURL } = setupMalloyRuntime();
+type RouterOptions = {
+  models: Record<string, string>;
+  notebooks: Record<string, string>;
+  getDataset: GetDataset;
+};
+function createAppRouter({
+  models,
+  notebooks,
+  getDataset,
+}: RouterOptions): ReturnType<typeof createHashRouter> {
+  const { runtime, getModelURL } = setupMalloyRuntime({
+    getDataset,
+    models,
+    notebooks,
+  });
   const cachedModels: ModelsCache = new Map();
 
   async function loadAndCacheModel(modelName: string): Promise<ModelCache> {
@@ -49,9 +63,9 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
       (await (async () => {
         console.log(`Loading model ${modelName}`);
         const modelMaterializer = runtime.loadModel(getModelURL(modelName));
-        const model = await modelMaterializer.getModel();
+        const _model = await modelMaterializer.getModel();
         const cacheEntry = {
-          model,
+          model: _model,
           modelMaterializer,
           sources: new Map(),
         };
@@ -64,29 +78,34 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
   async function loadAndCacheSource(
     modelName: string,
     sourceName: string,
+    includeTopValues: boolean,
   ): Promise<SourceCache> {
     const cachedModel = await loadAndCacheModel(modelName);
+    const cacheKey = `${modelName}:${sourceName}:${includeTopValues ? "includeTopValues" : ""}`;
 
     const source =
-      cachedModel.sources.get(sourceName) ??
+      cachedModel.sources.get(cacheKey) ??
       (await (async () => {
         console.log(`Loading source ${sourceName}`);
         const sourceInfo = getSourceInfo(
           cachedModel.model._modelDef,
           sourceName,
         );
-        const topValues =
-          (await cachedModel.modelMaterializer.searchValueMap(
-            sourceName,
-            10,
-          )) ?? [];
+        console.time("Loading top values");
+        const topValues = includeTopValues
+          ? ((await cachedModel.modelMaterializer.searchValueMap(
+              sourceName,
+              10,
+            )) ?? [])
+          : [];
+        console.timeEnd("Loading top values");
         const sourceCache = {
           info: sourceInfo,
           topValues,
           queryCache: new Map(),
           resultCache: new Map(),
         };
-        cachedModel.sources.set(sourceName, sourceCache);
+        cachedModel.sources.set(cacheKey, sourceCache);
         return sourceCache;
       })());
     return source;
@@ -148,13 +167,13 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
   return createHashRouter([
     {
       path: "/",
-      element: <SharedLayout />,
+      element: <SharedLayout notebooks={notebooks} models={models} />,
       errorElement: <ErrorBoundary />,
       hydrateFallbackElement: <div>Loading app...</div>,
       children: [
         {
           index: true,
-          element: <Home />,
+          element: <Home notebooks={notebooks} models={models} />,
         },
         {
           id: "model",
@@ -162,10 +181,10 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
           loader: async ({
             params,
           }): Promise<RouteTypes.ModelHomeLoaderData> => {
-            if (undefined === params.model) {
+            if (undefined === params["model"]) {
               throw new Error("Model name is required");
             }
-            return getRuntimeSetup(params.model);
+            return getRuntimeSetup(params["model"]);
           },
           children: [
             {
@@ -214,10 +233,16 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
                 const urlSearchParams = new URL(request.url).searchParams;
                 const querySrcParam = urlSearchParams.get("query");
                 const runQueryParam = urlSearchParams.get("run");
+                const includeTopValues =
+                  urlSearchParams.get("includeTopValues") === "true";
 
                 const { modelMaterializer } =
                   await loadAndCacheModel(modelName);
-                const source = await loadAndCacheSource(modelName, sourceName);
+                const source = await loadAndCacheSource(
+                  modelName,
+                  sourceName,
+                  includeTopValues,
+                );
                 const parsedQuery =
                   null === querySrcParam
                     ? undefined
@@ -235,8 +260,8 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
                 return {
                   sourceInfo: source.info,
                   topValues: source.topValues,
-                  parsedQuery: parsedQuery,
-                  submittedQuery: submittedQuery,
+                  parsedQuery,
+                  submittedQuery,
                 };
               },
               element: <ModelExplorer />,
@@ -253,7 +278,7 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
                 if (undefined === queryName) {
                   throw new Error("Query is required");
                 }
-                const { runtime, model } = await getRuntimeSetup(modelName);
+                const { model } = await getRuntimeSetup(modelName);
                 return executeMalloyPreparedQuery(runtime, model, queryName);
               },
               element: <QueryResult />,
@@ -277,7 +302,7 @@ function createAppRouter(): ReturnType<typeof createHashRouter> {
             if (undefined === notebook) {
               throw new Error("Notebook name is required");
             }
-            const notebookCode = getNotebookCode(notebook);
+            const notebookCode = getNotebookCode(notebooks, notebook);
             if (null === notebookCode) {
               throw new Error(`Notebook ${notebook} not found`);
             }

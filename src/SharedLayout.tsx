@@ -1,13 +1,16 @@
-import { Link, Location, useNavigation } from "react-router";
-import { Outlet } from "react-router";
-import { getModels, getNotebooks } from "./models";
+import type { Location } from "react-router";
+import type { Navigation } from "react-router";
+import { Link, useNavigation, Outlet } from "react-router";
+import type { JSX } from "react/jsx-runtime";
 
 export default SharedLayout;
 
-function SharedLayout() {
+type SharedLayoutProps = {
+  models: Record<string, string>;
+  notebooks: Record<string, string>;
+};
+function SharedLayout({ models, notebooks }: SharedLayoutProps): JSX.Element {
   const { state, location } = useNavigation();
-  const models = getModels();
-  const notebooks = getNotebooks();
   return (
     <>
       <nav>
@@ -24,7 +27,9 @@ function SharedLayout() {
                 {Object.keys(models).map((modelName) => {
                   return (
                     <li key={modelName}>
-                      <Link to={`/model/${modelName}`}>{modelName}</Link>
+                      <Link to={`/model/${encodeURIComponent(modelName)}`}>
+                        {modelName}
+                      </Link>
                     </li>
                   );
                 })}
@@ -40,7 +45,9 @@ function SharedLayout() {
                 {Object.keys(notebooks).map((notebookName) => {
                   return (
                     <li key={notebookName}>
-                      <Link to={`/notebook/${notebookName}`}>
+                      <Link
+                        to={`/notebook/${encodeURIComponent(notebookName)}`}
+                      >
                         {notebookName}
                       </Link>
                     </li>
@@ -51,15 +58,20 @@ function SharedLayout() {
           </li>
         </ul>
       </nav>
-      {"loading" === state && !isExplorerPath(location) ? (
-        "Loading...."
-      ) : (
-        <Outlet />
-      )}
+      {showLoader(state, location) ? "Loading...." : <Outlet />}
     </>
   );
 }
 
-function isExplorerPath(location: undefined | Location) {
-  return location?.pathname.includes("/explorer/");
+function showLoader(
+  state: Navigation["state"],
+  location: undefined | Location,
+) {
+  const urlSearchParams = new URLSearchParams(location?.search);
+  if (true === location?.pathname.includes("explorer")) {
+    // Only show loader when going into explorer page, since it has it's own loader for query change navigation
+    // When linking to explorer page from outside, we set the `load` query parameter
+    return "loading" === state && urlSearchParams.has("load");
+  }
+  return "loading" === state;
 }

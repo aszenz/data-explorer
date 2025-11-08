@@ -1,26 +1,23 @@
 import { useState } from "react";
 import * as MalloyInterface from "@malloydata/malloy-interfaces";
-import {
-  Navigation,
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from "react-router";
+import type { Navigation } from "react-router";
+import { useLoaderData, useNavigation, useSearchParams } from "react-router";
 import * as React from "react";
+import type { SubmittedQuery } from "@malloydata/malloy-explorer";
 import {
   MalloyExplorerProvider,
   QueryPanel,
   ResizableCollapsiblePanel,
   ResultPanel,
   SourcePanel,
-  SubmittedQuery,
 } from "@malloydata/malloy-explorer";
 import "@malloydata/malloy-explorer/styles.css";
-import { SourceExplorerLoaderData } from "./routeType";
+import type { SourceExplorerLoaderData } from "./routeType";
+import { type JSX } from "react/jsx-runtime";
 
 export default SourceExplorer;
 
-function SourceExplorer({}: { sourceName: string }) {
+function SourceExplorer(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
   const expandedQueryPanelParam = searchParams.get("showQueryPanel");
   const expandedSourcePanelParam = searchParams.get("showSourcePanel");
@@ -53,6 +50,7 @@ function SourceExplorer({}: { sourceName: string }) {
   }, [routeData.parsedQuery]);
 
   return (
+    /* @ts-expect-error Exact Optional Type is wrong from lib */
     <MalloyExplorerProvider
       source={routeData.sourceInfo}
       query={draftQuery}
@@ -99,6 +97,7 @@ function SourceExplorer({}: { sourceName: string }) {
             <QueryPanel runQuery={runQuery} />
           </ResizableCollapsiblePanel>
           <div style={{ height: "100%", flex: "1 1 auto" }}>
+            {/* @ts-expect-error Exact optional type is wrong from lib */}
             <ResultPanel
               source={routeData.sourceInfo}
               draftQuery={draftQuery}
@@ -127,6 +126,7 @@ function serializeQueryToUrl(
   }
 
   newSearchParams.set("run", "true");
+  newSearchParams.delete("load");
 
   if (newSearchParams.toString() !== searchParams.toString()) {
     return newSearchParams;

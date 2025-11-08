@@ -1,11 +1,15 @@
+import { Link } from "react-router";
 import "./index.css";
-import { getModels, getNotebooks } from "./models";
+import { type JSX } from "react/jsx-runtime";
 
 export default Home;
 
-function Home() {
-  const models = getModels();
-  const notebooks = getNotebooks();
+type HomeProps = {
+  models: Record<string, string>;
+  notebooks: Record<string, string>;
+};
+
+function Home({ models, notebooks }: HomeProps): JSX.Element {
   return (
     <div>
       <h2>Data Explorer</h2>
@@ -15,7 +19,9 @@ function Home() {
           {Object.keys(models).map((modelName) => {
             return (
               <li key={modelName}>
-                <a href={`#/model/${modelName}`}>{modelName}</a>
+                <Link to={`/model/${encodeURIComponent(modelName)}`}>
+                  {modelName}
+                </Link>
               </li>
             );
           })}
@@ -27,7 +33,9 @@ function Home() {
           {Object.keys(notebooks).map((notebookName) => {
             return (
               <li key={notebookName}>
-                <a href={`#/notebook/${notebookName}`}>{notebookName}</a>
+                <Link to={`/notebook/${encodeURIComponent(notebookName)}`}>
+                  {notebookName}
+                </Link>
               </li>
             );
           })}

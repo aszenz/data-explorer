@@ -118,13 +118,13 @@ nav {
   }
 
   .preview {
-    color: var(--vscode-editorCodeLens-foreground);
+    color: cadetblue;
     font-size: 0.8em;
     padding-left: 5px;
-    cursor: pointer;
-
+    background-color: transparent;
+    border: none;
     &:hover {
-      color: var(--vscode-editorLink-activeForeground);
+      text-decoration: underline;
     }
   }
 
