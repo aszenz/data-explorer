@@ -7,7 +7,7 @@ export type { NotebookViewerProps };
 
 type NotebookViewerProps = {
   notebook: NotebookOutput;
-  showCode: boolean;
+  showCode?: boolean;
 };
 
 function NotebookViewer({
