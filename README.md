@@ -53,7 +53,7 @@ A notebook is a sequence of markdown and Malloy results that are rendered togeth
 > You can also look at this [Github Actions File](.github/workflows/ci_cd.yml) for an example of deploying to GitHub Pages.
 
 > [!TIP]
-> Models can also reference data from external URLs, like the [Super Store model](https://github.com/aszenz/data-explorer/blob/master/models%2Fsuperstore.malloy) which uses data from huggingface.
+> Models can also reference data from external URLs (with CORS support), like the [Super Store model](https://github.com/aszenz/data-explorer/blob/master/models%2Fsuperstore.malloy) which uses data from huggingface.
 
 ## Using these awesome technologies
 
