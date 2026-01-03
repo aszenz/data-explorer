@@ -53,7 +53,7 @@ jobs:
       - name: Run tests on CI
         run: npm test
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-ci-report-${{ matrix.os }}
@@ -126,7 +126,7 @@ jobs:
         run: npm test
         env:
           URL: ${{ needs.deploy.outputs.page_url }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
