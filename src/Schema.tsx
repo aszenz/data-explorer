@@ -61,8 +61,12 @@ function SchemaRenderer({
 
   return (
     <div className="schema">
-      <ul>
-        <li>
+      {queries.length > 0 && (
+        <div className="schema-section">
+          <div className="schema-section-header">
+            <h3>Named Queries</h3>
+            <span className="count-badge">{queries.length}</span>
+          </div>
           <div className="field_list">
             {queries.sort(sortByName).map((query) => (
               <QueryItem
@@ -73,20 +77,28 @@ function SchemaRenderer({
               />
             ))}
           </div>
-        </li>
-        {explores.sort(sortByName).map((explore) => (
-          <StructItem
-            key={explore.name}
-            explore={explore}
-            path=""
-            onFieldClick={onFieldClick}
-            onPreviewClick={onPreviewClick}
-            onQueryClick={onQueryClick}
-            onExploreClick={onExploreClick}
-            startHidden={hidden}
-          />
-        ))}
-      </ul>
+        </div>
+      )}
+      <div className="schema-section">
+        <div className="schema-section-header">
+          <h3>Data Sources</h3>
+          <span className="count-badge">{explores.length}</span>
+        </div>
+        <ul>
+          {explores.sort(sortByName).map((explore) => (
+            <StructItem
+              key={explore.name}
+              explore={explore}
+              path=""
+              onFieldClick={onFieldClick}
+              onPreviewClick={onPreviewClick}
+              onQueryClick={onQueryClick}
+              onExploreClick={onExploreClick}
+              startHidden={hidden}
+            />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -180,34 +192,38 @@ function StructItem({
 
   return (
     <li className={classes}>
-      <div onClick={toggleHidden}>
-        <span className="chevron">
-          {hidden ? (
-            <ChevronRightIcon width={22} height={22} />
-          ) : (
-            <ChevronDownIcon width={22} height={22} />
-          )}
-        </span>
-        {getIconElement(`struct_${subtype}`, false)}
-        <b className="explore_name">{getExploreName(explore, path)}</b>
-        <button
-          type="button"
-          className="preview"
-          onClick={(e) => {
-            void onClickingPreview(e);
-          }}
-        >
-          Preview
-        </button>
-        <button
-          type="button"
-          className="preview"
-          onClick={(e) => {
-            void onClickingExplore(e);
-          }}
-        >
-          Explore
-        </button>
+      <div className="explore-header" onClick={toggleHidden}>
+        <div className="explore-header-left">
+          <span className="chevron">
+            {hidden ? (
+              <ChevronRightIcon width={22} height={22} />
+            ) : (
+              <ChevronDownIcon width={22} height={22} />
+            )}
+          </span>
+          {getIconElement(`struct_${subtype}`, false)}
+          <b className="explore_name">{getExploreName(explore, path)}</b>
+        </div>
+        <div className="explore-actions">
+          <button
+            type="button"
+            className="action-button preview-button"
+            onClick={(e) => {
+              void onClickingPreview(e);
+            }}
+          >
+            Preview
+          </button>
+          <button
+            type="button"
+            className="action-button explore-button"
+            onClick={(e) => {
+              void onClickingExplore(e);
+            }}
+          >
+            Explore
+          </button>
+        </div>
       </div>
       <ul>
         {queries.length ? (

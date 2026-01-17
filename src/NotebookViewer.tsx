@@ -14,21 +14,30 @@ function NotebookViewer({
   notebook,
   showCode = false,
 }: NotebookViewerProps): JSX.Element {
+  const cellCount = notebook.cells.length;
+
   return (
-    <main className="notebook">
-      {notebook.cells.map((cell, index) => (
-        <NotebookCellRenderer
-          key={index}
-          cell={cell}
-          cellIndex={index}
-          showCode={showCode}
-        />
-      ))}
-      {notebook.cells.length === 0 && (
-        <div>
-          <p>This page is empty.</p>
-        </div>
-      )}
-    </main>
+    <div className="notebook-container">
+      <div className="notebook-header">
+        <h2>Notebook</h2>
+        <span className="count-badge">{cellCount} cells</span>
+      </div>
+      <main className="notebook">
+        {notebook.cells.map((cell, index) => (
+          <NotebookCellRenderer
+            key={index}
+            cell={cell}
+            cellIndex={index}
+            showCode={showCode}
+          />
+        ))}
+        {notebook.cells.length === 0 && (
+          <div className="empty-state">
+            <p>This notebook is empty.</p>
+            <p className="empty-state-hint">No cells to display</p>
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
