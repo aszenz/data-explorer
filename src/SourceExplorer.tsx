@@ -60,6 +60,7 @@ function SourceExplorer(): JSX.Element {
       onFocusedNestViewPathChange={setNestViewPath}
     >
       <div
+        className="source-explorer-container"
         style={{
           display: "flex",
           flexDirection: "column",

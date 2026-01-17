@@ -7,6 +7,7 @@ export type {
   MalloyCell,
   MarkdownCell,
   NotebookOutput,
+  SourceReference,
 };
 
 type MalloyCell = { type: "malloy"; code: string };
@@ -24,9 +25,15 @@ type ParsedNotebook = {
 
 type CellOutput = MarkdownCell | (MalloyCell & { result: Result | null });
 
+type SourceReference = {
+  name: string;
+  model: string;
+};
+
 type NotebookOutput = {
   cells: CellOutput[];
   metadata: {
     title?: string;
   };
+  sources: SourceReference[];
 };
