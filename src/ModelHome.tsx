@@ -10,10 +10,18 @@ function ModelHome(): JSX.Element {
   const runtime = useRuntime();
   const navigate = useNavigate();
   const urlParams = useParams();
+  const modelName = urlParams["model"] || "";
+
   return (
-    <div>
-      <h1>Malloy model {urlParams["model"]}</h1>
-      <SchemaRenderer
+    <div className="model-home">
+      <div className="model-header">
+        <div className="model-header-content">
+          <h1 className="model-name">{modelName}</h1>
+          <p className="model-type">Malloy Data Model</p>
+        </div>
+      </div>
+      <div className="model-content">
+        <SchemaRenderer
         explores={runtime.model.exportedExplores}
         queries={runtime.model.namedQueries}
         defaultShow
@@ -52,6 +60,7 @@ function ModelHome(): JSX.Element {
           return navigate(`explorer/${source}`);
         }}
       />
+      </div>
     </div>
   );
 }
