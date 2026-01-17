@@ -32,14 +32,48 @@ async function captureScreenshots() {
     const modelLinks = await page.locator('.card.model-card').count();
 
     if (modelLinks > 0) {
-      // Click on first model
+      // Try to find a working model by checking multiple models
       console.log('2. Capturing model page...');
-      await page.locator('.card.model-card').first().click();
-      await page.waitForTimeout(2000);
-      await page.screenshot({
-        path: join(screenshotsDir, '02-model-page.png'),
-        fullPage: true
-      });
+      let foundWorkingModel = false;
+
+      for (let i = 0; i < Math.min(modelLinks, 3); i++) {
+        await page.goto('http://localhost:3000');
+        await page.waitForTimeout(500);
+
+        await page.locator('.card.model-card').nth(i).click();
+
+        // Wait for either error or content to load
+        await Promise.race([
+          page.waitForSelector('.model-header', { timeout: 10000 }).catch(() => null),
+          page.waitForSelector('h1:has-text("Error")', { timeout: 10000 }).catch(() => null)
+        ]);
+
+        await page.waitForTimeout(1000);
+
+        // Check if there's an error
+        const hasError = await page.locator('h1:has-text("Error")').count() > 0;
+
+        if (!hasError) {
+          await page.screenshot({
+            path: join(screenshotsDir, '02-model-page.png'),
+            fullPage: true
+          });
+          foundWorkingModel = true;
+          break;
+        }
+      }
+
+      if (!foundWorkingModel) {
+        console.log('   Warning: All tested models have errors, using first model anyway');
+        await page.goto('http://localhost:3000');
+        await page.waitForTimeout(500);
+        await page.locator('.card.model-card').first().click();
+        await page.waitForTimeout(2000);
+        await page.screenshot({
+          path: join(screenshotsDir, '02-model-page.png'),
+          fullPage: true
+        });
+      }
 
       // Check if there's an explore we can preview
       const exploreCount = await page.locator('.explore-header').count();
@@ -77,12 +111,38 @@ async function captureScreenshots() {
 
     if (notebookLinks > 0) {
       console.log('5. Capturing notebook page...');
-      await page.locator('.card.notebook-card').first().click();
-      await page.waitForTimeout(2000);
-      await page.screenshot({
-        path: join(screenshotsDir, '05-notebook-page.png'),
-        fullPage: true
-      });
+      let foundWorkingNotebook = false;
+
+      for (let i = 0; i < Math.min(notebookLinks, 3); i++) {
+        await page.goto('http://localhost:3000');
+        await page.waitForTimeout(500);
+
+        await page.locator('.card.notebook-card').nth(i).click();
+
+        // Wait for either error or content to load
+        await Promise.race([
+          page.waitForSelector('.notebook-header', { timeout: 10000 }).catch(() => null),
+          page.waitForSelector('h1:has-text("Error")', { timeout: 10000 }).catch(() => null)
+        ]);
+
+        await page.waitForTimeout(1000);
+
+        // Check if there's an error
+        const hasError = await page.locator('h1:has-text("Error")').count() > 0;
+
+        if (!hasError) {
+          await page.screenshot({
+            path: join(screenshotsDir, '05-notebook-page.png'),
+            fullPage: true
+          });
+          foundWorkingNotebook = true;
+          break;
+        }
+      }
+
+      if (!foundWorkingNotebook) {
+        console.log('   Warning: All tested notebooks have errors');
+      }
     }
 
     console.log('\nScreenshots saved to:', screenshotsDir);
