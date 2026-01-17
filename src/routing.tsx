@@ -10,6 +10,7 @@ import DataNotebook from "./DataNotebook";
 import ErrorBoundary from "./ErrorBoundary";
 import SharedLayout from "./SharedLayout";
 import Home from "./Home";
+import Loader from "./Loader";
 import {
   getNotebookCode,
   executeMalloyPreparedQuery,
@@ -169,7 +170,7 @@ function createAppRouter({
       path: "/",
       element: <SharedLayout notebooks={notebooks} models={models} />,
       errorElement: <ErrorBoundary />,
-      hydrateFallbackElement: <div>Loading app...</div>,
+      hydrateFallbackElement: <Loader />,
       children: [
         {
           index: true,

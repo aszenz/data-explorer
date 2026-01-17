@@ -6,12 +6,17 @@ import { type JSX } from "react/jsx-runtime";
 export default PreviewResult;
 
 function PreviewResult(): JSX.Element {
-  const { source: sourceName } = useParams();
   const result = useLoaderData<PreviewSourceLoaderData>();
+  const { source } = useParams();
   return (
-    <div>
-      <h1>Preview Result for {sourceName}</h1>
-      <RenderedResult result={result} />
+    <div className="result-page">
+      <div className="result-header">
+        <h1 className="result-title">{source}</h1>
+        <p className="result-subtitle">Preview</p>
+      </div>
+      <div className="result-content">
+        <RenderedResult result={result} />
+      </div>
     </div>
   );
 }

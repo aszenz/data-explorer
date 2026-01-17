@@ -26,5 +26,5 @@ function RenderedResult({
     }
   }, [viz, result]);
 
-  return <div style={{ height: "99%" }} ref={vizContainer} />;
+  return <div style={{ height: "400px" }} ref={vizContainer} />;
 }

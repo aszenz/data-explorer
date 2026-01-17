@@ -58,11 +58,39 @@ function SchemaRenderer({
   defaultShow,
 }: SchemaRendererProps): JSX.Element {
   const hidden = !defaultShow;
+  const hasQueries = queries.length > 0;
+  const [activeTab, setActiveTab] = React.useState<"sources" | "queries">(
+    "sources",
+  );
 
   return (
     <div className="schema">
-      <ul>
-        <li>
+      <div className="schema-tabs">
+        <button
+          type="button"
+          className={`schema-tab ${activeTab === "sources" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("sources");
+          }}
+        >
+          Data Sources
+          <span className="count-badge">{explores.length}</span>
+        </button>
+        {hasQueries && (
+          <button
+            type="button"
+            className={`schema-tab ${activeTab === "queries" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("queries");
+            }}
+          >
+            Named Queries
+            <span className="count-badge">{queries.length}</span>
+          </button>
+        )}
+      </div>
+      <div className="schema-tab-content">
+        {activeTab === "queries" && hasQueries && (
           <div className="field_list">
             {queries.sort(sortByName).map((query) => (
               <QueryItem
@@ -73,20 +101,24 @@ function SchemaRenderer({
               />
             ))}
           </div>
-        </li>
-        {explores.sort(sortByName).map((explore) => (
-          <StructItem
-            key={explore.name}
-            explore={explore}
-            path=""
-            onFieldClick={onFieldClick}
-            onPreviewClick={onPreviewClick}
-            onQueryClick={onQueryClick}
-            onExploreClick={onExploreClick}
-            startHidden={hidden}
-          />
-        ))}
-      </ul>
+        )}
+        {activeTab === "sources" && (
+          <ul>
+            {explores.sort(sortByName).map((explore) => (
+              <StructItem
+                key={explore.name}
+                explore={explore}
+                path=""
+                onFieldClick={onFieldClick}
+                onPreviewClick={onPreviewClick}
+                onQueryClick={onQueryClick}
+                onExploreClick={onExploreClick}
+                startHidden={hidden}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
@@ -180,34 +212,64 @@ function StructItem({
 
   return (
     <li className={classes}>
-      <div onClick={toggleHidden}>
-        <span className="chevron">
-          {hidden ? (
-            <ChevronRightIcon width={22} height={22} />
-          ) : (
-            <ChevronDownIcon width={22} height={22} />
-          )}
-        </span>
-        {getIconElement(`struct_${subtype}`, false)}
-        <b className="explore_name">{getExploreName(explore, path)}</b>
-        <button
-          type="button"
-          className="preview"
-          onClick={(e) => {
-            void onClickingPreview(e);
-          }}
-        >
-          Preview
-        </button>
-        <button
-          type="button"
-          className="preview"
-          onClick={(e) => {
-            void onClickingExplore(e);
-          }}
-        >
-          Explore
-        </button>
+      <div className="explore-header" onClick={toggleHidden}>
+        <div className="explore-header-left">
+          <span className="chevron">
+            {hidden ? (
+              <ChevronRightIcon width={22} height={22} />
+            ) : (
+              <ChevronDownIcon width={22} height={22} />
+            )}
+          </span>
+          {getIconElement(`struct_${subtype}`, false)}
+          <b className="explore_name">{getExploreName(explore, path)}</b>
+        </div>
+        <div className="explore-actions">
+          <button
+            type="button"
+            className="action-button preview-button"
+            onClick={(e) => {
+              void onClickingPreview(e);
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            Preview
+          </button>
+          <button
+            type="button"
+            className="action-button explore-button"
+            onClick={(e) => {
+              void onClickingExplore(e);
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            </svg>
+            Explore
+          </button>
+        </div>
       </div>
       <ul>
         {queries.length ? (
