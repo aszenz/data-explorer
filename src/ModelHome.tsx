@@ -24,6 +24,8 @@ function ModelHome(): JSX.Element {
         <SchemaRenderer
           explores={runtime.model.exportedExplores}
           queries={runtime.model.namedQueries}
+          modelCode={runtime.modelCode}
+          dataSources={runtime.dataSources}
           defaultShow
           onPreviewClick={(explore) => {
             const { name: sourceName } = explore;

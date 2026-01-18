@@ -10,6 +10,8 @@ import {
   type NamedQuery,
   type QueryField,
 } from "@malloydata/malloy";
+import MalloyCodeBlock from "./MalloyCodeBlock";
+import type { DataSourceInfo } from "./types";
 
 import {
   exploreSubtype,
@@ -41,6 +43,8 @@ export type { SchemaRendererProps };
 type SchemaRendererProps = {
   explores: Explore[];
   queries: NamedQuery[];
+  modelCode?: string;
+  dataSources?: DataSourceInfo[];
   onFieldClick: (_field: Field) => void | Promise<void>;
   onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
   onPreviewClick: (_explore: Explore) => void | Promise<void>;
@@ -48,9 +52,53 @@ type SchemaRendererProps = {
   defaultShow: boolean;
 };
 
+/**
+ * Extract table/file references from Malloy model code
+ */
+function extractReferencedDataFiles(
+  modelCode: string,
+  dataSources: DataSourceInfo[],
+): DataSourceInfo[] {
+  // Match patterns like table('duckdb:path/file.ext') or table("duckdb:path/file.ext")
+  // Also match from() and similar patterns
+  const tablePatterns = [
+    /table\s*\(\s*['"](?:duckdb:)?([^'"]+)['"]\s*\)/gi,
+    /from\s*\(\s*['"](?:duckdb:)?([^'"]+)['"]\s*\)/gi,
+  ];
+
+  const referencedPaths = new Set<string>();
+
+  for (const pattern of tablePatterns) {
+    let match;
+    while ((match = pattern.exec(modelCode)) !== null) {
+      const path = match[1];
+      referencedPaths.add(path);
+      // Also add without 'data/' prefix if present, or with it
+      if (path.startsWith("data/")) {
+        referencedPaths.add(path.substring(5));
+      } else {
+        referencedPaths.add(`data/${path}`);
+      }
+    }
+  }
+
+  // Filter dataSources to only include referenced files
+  return dataSources.filter((source) => {
+    const fileName = `${source.name}.${source.fileType}`;
+    const pathWithData = `data/${fileName}`;
+    return (
+      referencedPaths.has(fileName) ||
+      referencedPaths.has(pathWithData) ||
+      referencedPaths.has(source.path.replace("/models/", ""))
+    );
+  });
+}
+
 function SchemaRenderer({
   explores,
   queries,
+  modelCode,
+  dataSources,
   onFieldClick,
   onQueryClick,
   onPreviewClick,
@@ -59,9 +107,17 @@ function SchemaRenderer({
 }: SchemaRendererProps): JSX.Element {
   const hidden = !defaultShow;
   const hasQueries = queries.length > 0;
-  const [activeTab, setActiveTab] = React.useState<"sources" | "queries">(
-    "sources",
-  );
+
+  // Filter dataSources to only show files referenced in the model
+  const referencedDataSources = React.useMemo(() => {
+    if (!modelCode || !dataSources) return [];
+    return extractReferencedDataFiles(modelCode, dataSources);
+  }, [modelCode, dataSources]);
+
+  const hasDataSources = referencedDataSources.length > 0;
+  const [activeTab, setActiveTab] = React.useState<
+    "sources" | "queries" | "code" | "data"
+  >("sources");
 
   return (
     <div className="schema">
@@ -73,6 +129,20 @@ function SchemaRenderer({
             setActiveTab("sources");
           }}
         >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+          </svg>
           Data Sources
           <span className="count-badge">{explores.length}</span>
         </button>
@@ -84,8 +154,70 @@ function SchemaRenderer({
               setActiveTab("queries");
             }}
           >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
             Named Queries
             <span className="count-badge">{queries.length}</span>
+          </button>
+        )}
+        {modelCode && (
+          <button
+            type="button"
+            className={`schema-tab ${activeTab === "code" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("code");
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            Malloy Definition
+          </button>
+        )}
+        {hasDataSources && (
+          <button
+            type="button"
+            className={`schema-tab ${activeTab === "data" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("data");
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Raw Data
+            <span className="count-badge">{referencedDataSources.length}</span>
           </button>
         )}
       </div>
@@ -100,6 +232,11 @@ function SchemaRenderer({
                 onQueryClick={onQueryClick}
               />
             ))}
+          </div>
+        )}
+        {activeTab === "code" && modelCode && (
+          <div className="model-code">
+            <MalloyCodeBlock code={modelCode} />
           </div>
         )}
         {activeTab === "sources" && (
@@ -117,6 +254,51 @@ function SchemaRenderer({
               />
             ))}
           </ul>
+        )}
+        {activeTab === "data" && hasDataSources && (
+          <div className="raw-data-list">
+            {referencedDataSources.map((source) => (
+              <a
+                key={source.path}
+                href={source.url}
+                download={`${source.name}.${source.fileType}`}
+                className="raw-data-item"
+                title={`Download ${source.name}.${source.fileType}`}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="raw-data-icon"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span className="raw-data-name">{source.name}</span>
+                <span className="raw-data-type">{source.fileType.toUpperCase()}</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="raw-data-download-icon"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </a>
+            ))}
+          </div>
         )}
       </div>
     </div>
