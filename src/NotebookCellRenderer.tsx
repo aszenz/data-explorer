@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
 import MarkdownRenderer from "./MarkdownRenderer";
+import MalloyCodeBlock from "./MalloyCodeBlock";
 import type { CellOutput } from "./notebook-types";
 import RenderedResult from "./RenderedResult";
 import { type JSX } from "react/jsx-runtime";
@@ -99,9 +100,7 @@ function NotebookCellRenderer({
       </div>
       <details className="cell-code">
         <summary>Code</summary>
-        <pre>
-          <code>{cell.code}</code>
-        </pre>
+        <MalloyCodeBlock code={cell.code} />
       </details>
     </div>
   );

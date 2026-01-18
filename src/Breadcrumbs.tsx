@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from "react-router";
 import { useRuntime } from "./contexts";
+import MalloyCodeBlock from "./MalloyCodeBlock";
 import { type JSX } from "react/jsx-runtime";
 
 export default Breadcrumbs;
@@ -89,7 +90,9 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
       {isExplorerPage && queryParam && (
         <>
           <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-item query">{queryParam}</span>
+          <span className="breadcrumb-item query">
+            <MalloyCodeBlock code={queryParam} />
+          </span>
         </>
       )}
 

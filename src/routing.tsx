@@ -25,6 +25,7 @@ import type { RuntimeSetup } from "./types";
 
 import type * as RouteTypes from "./routeType";
 import type { GetDataset } from "./connection";
+import type { DataSourceInfo } from "./types";
 
 export default createAppRouter;
 
@@ -44,11 +45,13 @@ type ModelsCache = Map<string, ModelCache>;
 type RouterOptions = {
   models: Record<string, string>;
   notebooks: Record<string, string>;
+  dataSources: DataSourceInfo[];
   getDataset: GetDataset;
 };
 function createAppRouter({
   models,
   notebooks,
+  dataSources,
   getDataset,
 }: RouterOptions): ReturnType<typeof createHashRouter> {
   const { runtime, getModelURL } = setupMalloyRuntime({
@@ -156,11 +159,14 @@ function createAppRouter({
    */
   async function getRuntimeSetup(modelName: string): Promise<RuntimeSetup> {
     const loadedModel = await loadAndCacheModel(modelName);
+    const modelCode = models[modelName] ?? "";
 
     return {
       runtime,
       modelMaterializer: loadedModel.modelMaterializer,
       model: loadedModel.model,
+      modelCode,
+      dataSources,
       refreshModel: () => {},
     };
   }

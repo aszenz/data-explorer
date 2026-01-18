@@ -198,6 +198,22 @@ button.breadcrumb-item.current {
   white-space: nowrap;
 }
 
+.breadcrumb-item.query .shiki,
+.breadcrumb-item.query pre {
+  display: inline;
+  background: transparent !important;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.breadcrumb-item.query code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+}
+
 .breadcrumb-separator {
   color: var(--color-text-tertiary);
   font-weight: 300;
@@ -479,6 +495,97 @@ button.breadcrumb-item.current {
   box-shadow: var(--shadow-sm);
 }
 
+.model-code {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: auto;
+  max-height: 600px;
+}
+
+.model-code pre {
+  margin: 0;
+  padding: var(--spacing-lg);
+  background-color: var(--color-background-secondary) !important;
+}
+
+.model-code code {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.model-code .shiki {
+  margin: 0;
+  padding: var(--spacing-lg);
+  overflow-x: auto;
+}
+
+.model-code .shiki code {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Raw Data Tab Styles */
+.raw-data-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  max-width: 400px;
+}
+
+a.raw-data-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-background-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.raw-data-item:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-background-secondary);
+}
+
+.raw-data-icon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.raw-data-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+}
+
+.raw-data-type {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  background-color: var(--color-background-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.raw-data-download-icon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+a.raw-data-item:hover .raw-data-download-icon {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
 /* === SCHEMA === */
 .schema {
   color: var(--color-text-primary);
@@ -519,6 +626,10 @@ button.breadcrumb-item.current {
 
 .schema-tab .count-badge {
   font-size: 0.8rem;
+}
+
+.schema-tab svg {
+  flex-shrink: 0;
 }
 
 .schema-tab-content {
@@ -850,6 +961,19 @@ button.breadcrumb-item.current {
 }
 
 .cell-code code {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+}
+
+.cell-code .shiki {
+  margin: 0;
+  padding: var(--spacing-md);
+  background-color: var(--color-background-secondary) !important;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.cell-code .shiki code {
   font-family: "SF Mono", "Fira Code", "Consolas", monospace;
 }
 

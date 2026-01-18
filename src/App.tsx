@@ -2,6 +2,7 @@ import { RouterProvider } from "react-router";
 import "./index.css";
 import createAppRouter from "./routing";
 import type { SupportedFileType } from "./connection";
+import type { DataSourceInfo } from "./types";
 import type { JSX } from "react/jsx-runtime";
 
 export default App;
@@ -12,6 +13,7 @@ function App(): JSX.Element {
       router={createAppRouter({
         models: getModels(),
         notebooks: getNotebooks(),
+        dataSources: getDataSourcesInfo(),
         getDataset,
       })}
     />
@@ -88,6 +90,23 @@ function getNotebooks(): Record<string, string> {
   }, {});
   console.log({ notebooks });
   return notebooks;
+}
+
+function getDataSourcesInfo(): DataSourceInfo[] {
+  return Object.entries(dataSources).map(([path, url]) => {
+    if (typeof url !== "string") {
+      throw new Error(`Invalid URL for dataset: ${path}`);
+    }
+    const fileName = path.split("/").pop() ?? path;
+    const name = fileName.replace(/\.[^/.]+$/, "");
+    const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+    return {
+      name,
+      path,
+      url,
+      fileType: extension,
+    };
+  });
 }
 
 /**
