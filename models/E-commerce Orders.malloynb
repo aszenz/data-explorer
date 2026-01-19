@@ -1,0 +1,77 @@
+>>>markdown
+# E-commerce Orders Analysis
+
+This notebook analyzes e-commerce order data including products, customers, geographic distribution, and order fulfillment metrics.
+>>>malloy
+import { orders, contracts } from './ecommerce_orders.malloy'
+>>>markdown
+## 1. Data Preview
+
+First, let's look at a sample of the raw order data.
+>>>malloy
+run: orders -> {
+    select: *
+    limit: 100
+}
+>>>markdown
+## 2. Key Performance Indicators
+
+Overview of the main business metrics with monthly trends.
+>>>malloy
+run: orders -> metrics
+>>>markdown
+## 3. Product Category Analysis
+
+Breakdown of orders and revenue by product category with top products in each.
+>>>malloy
+run: orders -> product_analysis
+>>>markdown
+## 4. Geographic Market Analysis
+
+Analysis of orders by customer country with delivery and cancellation rates.
+>>>malloy
+run: orders -> market_analysis
+>>>markdown
+## 5. Customer Analysis
+
+Customer distribution by country with payment method and order status breakdowns.
+>>>malloy
+run: orders -> customer_analysis
+>>>markdown
+## 6. Order Fulfillment
+
+Analysis of order status distribution across countries and categories.
+>>>malloy
+run: orders -> fulfillment_analysis
+>>>markdown
+## 7. Yearly Performance Overview
+
+Year-over-year performance with key metrics and trends.
+>>>malloy
+# dashboard
+run: orders -> yearly_overview
+>>>markdown
+## 8. High Value Orders
+
+Orders with price greater than $100, sorted by value.
+>>>malloy
+run: orders -> {
+    select:
+        order_id
+        product_name
+        category
+        price
+        quantity
+        customer_country
+        order_status
+        payment_method
+    where: price > 100
+    order_by: price desc
+    limit: 50
+}
+>>>markdown
+## 9. Contracts Overview
+
+Business contracts summary with status and client breakdown.
+>>>malloy
+run: contracts -> overview

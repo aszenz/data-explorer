@@ -1,0 +1,65 @@
+>>>markdown
+# Invoice Analysis
+
+This notebook analyzes invoice data including payment status, amounts, and tax metrics.
+
+**Data Source:** Parquet file containing invoice records
+>>>malloy
+import { invoices } from './invoices.malloy'
+>>>markdown
+## 1. Data Preview
+
+Let's examine the invoice data structure.
+>>>malloy
+run: invoices -> {
+    select: *
+    limit: 100
+}
+>>>markdown
+## 2. Invoice Overview Dashboard
+
+High-level summary of invoice metrics with status breakdown.
+>>>malloy
+# dashboard
+run: invoices -> overview
+>>>markdown
+## 3. Invoice Status Breakdown
+
+Distribution of invoices by payment status.
+>>>malloy
+# bar_chart
+run: invoices -> by_status
+>>>markdown
+## 4. Summary Statistics
+
+Aggregate metrics for all invoices.
+>>>malloy
+run: invoices -> {
+    aggregate:
+        invoice_count
+        total_net_amount
+        total_tax_amount
+        avg_invoice_amount
+}
+>>>markdown
+## 5. Largest Invoices
+
+Top invoices by total amount.
+>>>malloy
+run: invoices -> {
+    select: *
+    order_by: total_amount desc
+    limit: 20
+}
+>>>markdown
+## 6. Tax Analysis
+
+Examining tax amounts across the invoice portfolio.
+>>>malloy
+run: invoices -> {
+    aggregate:
+        invoice_count
+        total_tax_amount
+        avg_tax_amount
+        tax_rate
+}

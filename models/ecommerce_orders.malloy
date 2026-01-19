@@ -1,0 +1,285 @@
+-- Trading Orders Analysis Model
+-- Analyzes e-commerce order data including products, customers, and geographic trends
+source: orders is duckdb.table('data/orders.csv') extend {
+    -- Core measures
+    measure: order_count is count(order_id)
+    measure: total_revenue is sum(price * quantity)
+    measure: avg_order_value is avg(price * quantity)
+    measure: total_quantity is sum(quantity)
+    measure: avg_price is price.avg()
+    measure: customer_count is count(customer_id)
+
+    -- Order status measures
+    measure: delivered_count is count() { where: order_status = 'Delivered' }
+    measure: processing_count is count() { where: order_status = 'Processing' }
+    measure: cancelled_count is count() { where: order_status = 'Cancelled' }
+    measure: delivery_rate is delivered_count / order_count * 100
+    measure: cancellation_rate is cancelled_count / order_count * 100
+
+    -- Basic views
+    view: all_orders is { select: * }
+
+    view: by_category is {
+        group_by: category
+        aggregate:
+            order_count
+            total_revenue
+            total_quantity
+            avg_order_value
+    }
+
+    view: by_country is {
+        group_by: customer_country
+        aggregate:
+            order_count
+            total_revenue
+            customer_count
+            avg_order_value
+    }
+
+    view: by_status is {
+        group_by: order_status
+        aggregate:
+            order_count
+            total_revenue
+    }
+
+    view: by_payment_method is {
+        group_by: payment_method
+        aggregate:
+            order_count
+            total_revenue
+            avg_order_value
+    }
+
+    view: by_month is {
+        group_by: order_month is sale_date.month
+        aggregate:
+            order_count
+            total_revenue
+            total_quantity
+        order_by: order_month
+    }
+
+    -- KPI metrics view with sparkline trends
+    # big_value
+    view: metrics is {
+        aggregate:
+            # big_value { sparkline=order_count_trend }
+            order_count
+            # currency=usd1m
+            # description="Total revenue from all orders"
+            # big_value { sparkline=revenue_trend }
+            total_revenue
+            # currency=usd1
+            # big_value { sparkline=avg_order_value_trend }
+            avg_order_value
+            # big_value { sparkline=total_quantity_trend }
+            total_quantity
+        # bar_chart {size=spark}
+        # hidden
+        nest: revenue_trend is {
+            group_by: sale_date.month
+            # currency=usd1m
+            aggregate: monthly_revenue is total_revenue
+            order_by: sale_date
+            limit: 12
+        }
+        # bar_chart {size=spark}
+        # hidden
+        nest: order_count_trend is {
+            group_by: sale_date.month
+            aggregate: monthly_orders is order_count
+            order_by: sale_date
+            limit: 12
+        }
+        # bar_chart {size=spark}
+        # hidden
+        nest: avg_order_value_trend is {
+            group_by: sale_date.month
+            # currency=usd1
+            aggregate: monthly_aov is avg_order_value
+            order_by: sale_date
+            limit: 12
+        }
+        # bar_chart {size=spark}
+        # hidden
+        nest: total_quantity_trend is {
+            group_by: sale_date.month
+            aggregate: monthly_quantity is total_quantity
+            order_by: sale_date
+            limit: 12
+        }
+    }
+
+    -- Yearly overview with nested metrics
+    # dashboard
+    view: yearly_overview is {
+        group_by: sales_year is sale_date.year
+        nest: metrics
+        order_by: sales_year desc
+    }
+
+    -- Product category analysis
+    view: product_analysis is {
+        group_by: category
+        aggregate:
+            order_count
+            total_revenue
+            avg_order_value
+        # bar_chart
+        nest: top_products is {
+            group_by: product_name
+            aggregate:
+                order_count
+                total_revenue
+            limit: 10
+        }
+    }
+
+    -- Customer analysis view
+    view: customer_analysis is {
+        group_by: customer_country
+        aggregate:
+            customer_count
+            order_count
+            total_revenue
+            avg_order_value
+        # bar_chart
+        nest: by_payment is {
+            group_by: payment_method
+            aggregate:
+                order_count
+                total_revenue
+        }
+        # bar_chart
+        nest: by_status is {
+            group_by: order_status
+            aggregate:
+                order_count
+        }
+    }
+
+    -- Geographic market analysis
+    # bar_chart
+    view: market_analysis is {
+        group_by: customer_country
+        aggregate:
+            order_count
+            total_revenue
+            customer_count
+            avg_order_value
+            delivery_rate
+            cancellation_rate
+    }
+
+    -- Order fulfillment analysis
+    view: fulfillment_analysis is {
+        group_by: order_status
+        aggregate:
+            order_count
+            total_revenue
+        # bar_chart
+        nest: by_country is {
+            group_by: customer_country
+            aggregate:
+                order_count
+        }
+        # bar_chart
+        nest: by_category is {
+            group_by: category
+            aggregate:
+                order_count
+        }
+    }
+
+    -- Dashboard overview
+    # dashboard
+    view: overview is {
+        aggregate:
+            order_count
+            total_revenue
+            avg_order_value
+            total_quantity
+            customer_count
+            delivery_rate
+            cancellation_rate
+        # bar_chart
+        nest: by_category
+        # bar_chart
+        nest: by_country
+        # bar_chart
+        nest: by_status
+        # bar_chart
+        nest: by_payment_method
+        # bar_chart
+        nest: by_month
+    }
+}
+
+-- Contracts source (business contracts data)
+source: contracts is duckdb.table('data/contracts.csv') extend {
+    -- Measures
+    measure: contract_count is count()
+    measure: total_contract_value is ContractValue.sum()
+    measure: avg_contract_value is ContractValue.avg()
+    measure: active_contracts is count() { where: Status = 'Active' }
+    measure: completed_contracts is count() { where: Status = 'Completed' }
+
+    -- Views
+    view: by_status is {
+        group_by: Status
+        aggregate:
+            contract_count
+            total_contract_value
+    }
+
+    view: by_client is {
+        group_by: ClientName
+        aggregate:
+            contract_count
+            total_contract_value
+            avg_contract_value
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            contract_count
+            total_contract_value
+            avg_contract_value
+            active_contracts
+            completed_contracts
+        # bar_chart
+        nest: by_status
+        # bar_chart
+        nest: by_client
+    }
+}
+
+-- Named queries
+query: all_orders is orders -> { select: * }
+query: order_summary is orders -> overview
+query: yearly_report is orders -> yearly_overview
+query: product_report is orders -> product_analysis
+query: customer_report is orders -> customer_analysis
+query: market_report is orders -> market_analysis
+query: fulfillment_report is orders -> fulfillment_analysis
+query: kpi_metrics is orders -> metrics
+
+query: all_contracts is contracts -> { select: * }
+query: contract_summary is contracts -> overview
+
+-- High value orders analysis
+query: high_value_orders is orders -> {
+    select:
+        order_id
+        product_name
+        price
+        quantity
+        customer_country
+        order_status
+    where: price > 100
+    order_by: price desc
+    limit: 50
+}

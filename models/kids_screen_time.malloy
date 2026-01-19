@@ -1,0 +1,129 @@
+-- Screen Time Analysis Model
+-- Analyzes screen time patterns among Indian children
+-- Data includes demographics, device usage, and health impacts
+source: screen_time is duckdb.table('data/Indian_Kids_Screen_Time.csv') extend {
+    -- Core measures
+    measure: participant_count is count()
+    measure: avg_age is Age.avg()
+    measure: avg_daily_screen_time is Avg_Daily_Screen_Time_hr.avg()
+    measure: total_screen_time is Avg_Daily_Screen_Time_hr.sum()
+    measure: max_screen_time is Avg_Daily_Screen_Time_hr.max()
+    measure: min_screen_time is Avg_Daily_Screen_Time_hr.min()
+    measure: avg_edu_rec_ratio is Educational_to_Recreational_Ratio.avg()
+
+    -- Limit compliance measures
+    measure: exceeded_limit_count is count() { where: Exceeded_Recommended_Limit = 'True' }
+    measure: within_limit_count is count() { where: Exceeded_Recommended_Limit = 'False' }
+    measure: exceeded_limit_pct is exceeded_limit_count / participant_count * 100
+
+    -- Basic breakdown views
+    view: by_gender is {
+        group_by: Gender
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+            avg_edu_rec_ratio
+            exceeded_limit_pct
+    }
+
+    view: by_location is {
+        group_by: Urban_or_Rural
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+            avg_edu_rec_ratio
+            exceeded_limit_pct
+    }
+
+    view: by_device is {
+        group_by: Primary_Device
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+            avg_edu_rec_ratio
+    }
+
+    view: by_age_group is {
+        group_by: age_group is
+            pick 'Under 10' when Age < 10
+            pick '10-12' when Age < 13
+            pick '13-15' when Age < 16
+            else '16+'
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+            avg_edu_rec_ratio
+            exceeded_limit_pct
+    }
+
+    view: by_health_impact is {
+        group_by: Health_Impacts
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+    }
+
+    view: by_limit_compliance is {
+        group_by: compliance_status is
+            pick 'Exceeded Limit' when Exceeded_Recommended_Limit = 'True'
+            else 'Within Limit'
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+            avg_edu_rec_ratio
+    }
+
+    -- Detailed drill-down views
+    view: gender_device_analysis is {
+        group_by: Gender
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+        # bar_chart
+        nest: by_device is {
+            group_by: Primary_Device
+            aggregate:
+                participant_count
+                avg_daily_screen_time
+        }
+    }
+
+    view: location_health_analysis is {
+        group_by: Urban_or_Rural
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+        # bar_chart
+        nest: by_health is {
+            group_by: Health_Impacts
+            aggregate:
+                participant_count
+        }
+    }
+
+    -- Dashboard overview
+    # dashboard
+    view: overview is {
+        aggregate:
+            participant_count
+            avg_daily_screen_time
+            avg_edu_rec_ratio
+            exceeded_limit_pct
+        # bar_chart
+        nest: by_gender
+        # bar_chart
+        nest: by_location
+        # bar_chart
+        nest: by_device
+        # bar_chart
+        nest: by_age_group
+        # bar_chart
+        nest: by_health_impact
+    }
+}
+
+-- Named queries
+query: all_data is screen_time -> { select: * }
+query: summary_stats is screen_time -> overview
+query: gender_analysis is screen_time -> gender_device_analysis
+query: health_analysis is screen_time -> location_health_analysis

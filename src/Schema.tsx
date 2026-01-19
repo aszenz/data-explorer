@@ -72,12 +72,14 @@ function extractReferencedDataFiles(
     let match;
     while ((match = pattern.exec(modelCode)) !== null) {
       const path = match[1];
-      referencedPaths.add(path);
-      // Also add without 'data/' prefix if present, or with it
-      if (path.startsWith("data/")) {
-        referencedPaths.add(path.substring(5));
-      } else {
-        referencedPaths.add(`data/${path}`);
+      if (path) {
+        referencedPaths.add(path);
+        // Also add without 'data/' prefix if present, or with it
+        if (path.startsWith("data/")) {
+          referencedPaths.add(path.substring(5));
+        } else {
+          referencedPaths.add(`data/${path}`);
+        }
       }
     }
   }

@@ -1,0 +1,133 @@
+-- Sample Data Model
+-- Demonstrates Malloy features using inline generated data
+-- Useful for testing and learning Malloy syntax
+
+-- Sample employee data generated inline
+source: employees is duckdb.sql("""
+    SELECT * FROM (VALUES
+        (1, 'Alice Smith', 'Engineering', 'Senior Engineer', 95000, '2020-03-15'),
+        (2, 'Bob Johnson', 'Engineering', 'Lead Engineer', 120000, '2018-07-22'),
+        (3, 'Carol Williams', 'Sales', 'Sales Manager', 85000, '2019-11-08'),
+        (4, 'David Brown', 'Marketing', 'Marketing Specialist', 65000, '2021-01-20'),
+        (5, 'Eve Davis', 'Engineering', 'Junior Engineer', 70000, '2022-06-10'),
+        (6, 'Frank Miller', 'Sales', 'Sales Representative', 55000, '2021-09-05'),
+        (7, 'Grace Wilson', 'Marketing', 'Marketing Manager', 90000, '2019-04-12'),
+        (8, 'Henry Taylor', 'Engineering', 'Staff Engineer', 140000, '2017-02-28'),
+        (9, 'Ivy Anderson', 'HR', 'HR Specialist', 60000, '2020-08-15'),
+        (10, 'Jack Thomas', 'HR', 'HR Manager', 80000, '2018-05-20')
+    ) AS t(id, name, department, title, salary, hire_date)
+""") extend {
+    dimension: hire_date_parsed is strptime!date(hire_date, "%Y-%m-%d")
+
+    -- Measures
+    measure: employee_count is count()
+    measure: total_payroll is salary.sum()
+    measure: avg_salary is salary.avg()
+    measure: min_salary is salary.min()
+    measure: max_salary is salary.max()
+    measure: salary_range is max_salary - min_salary
+
+    -- Views
+    view: by_department is {
+        group_by: department
+        aggregate:
+            employee_count
+            total_payroll
+            avg_salary
+    }
+
+    view: by_title is {
+        group_by: title
+        aggregate:
+            employee_count
+            avg_salary
+    }
+
+    view: by_salary_band is {
+        group_by: salary_band is
+            pick 'Entry Level' when salary < 60000
+            pick 'Mid Level' when salary < 80000
+            pick 'Senior Level' when salary < 100000
+            else 'Executive Level'
+        aggregate:
+            employee_count
+            avg_salary
+    }
+
+    view: department_hierarchy is {
+        group_by: department
+        aggregate:
+            employee_count
+            total_payroll
+        # bar_chart
+        nest: roles is {
+            group_by: title
+            aggregate:
+                employee_count
+                avg_salary
+        }
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            employee_count
+            total_payroll
+            avg_salary
+            min_salary
+            max_salary
+        # bar_chart
+        nest: by_department
+        # bar_chart
+        nest: by_salary_band
+    }
+}
+
+-- Sample project data
+source: projects is duckdb.sql("""
+    SELECT * FROM (VALUES
+        (1, 'Website Redesign', 'Engineering', 'In Progress', 50000, '2024-01-15', '2024-06-30'),
+        (2, 'Q1 Marketing Campaign', 'Marketing', 'Completed', 25000, '2024-01-01', '2024-03-31'),
+        (3, 'New CRM Implementation', 'Sales', 'In Progress', 100000, '2024-02-01', '2024-12-31'),
+        (4, 'Employee Training Program', 'HR', 'Planning', 15000, '2024-04-01', '2024-09-30'),
+        (5, 'Mobile App Development', 'Engineering', 'In Progress', 150000, '2024-03-01', '2024-12-31')
+    ) AS t(id, name, department, status, budget, start_date, end_date)
+""") extend {
+    measure: project_count is count()
+    measure: total_budget is budget.sum()
+    measure: avg_budget is budget.avg()
+
+    view: by_department is {
+        group_by: department
+        aggregate:
+            project_count
+            total_budget
+    }
+
+    view: by_status is {
+        group_by: status
+        aggregate:
+            project_count
+            total_budget
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            project_count
+            total_budget
+            avg_budget
+        # bar_chart
+        nest: by_department
+        # bar_chart
+        nest: by_status
+    }
+}
+
+-- Named queries
+query: all_employees is employees -> { select: * }
+query: employee_overview is employees -> overview
+query: department_report is employees -> department_hierarchy
+
+query: all_projects is projects -> { select: * }
+query: project_overview is projects -> overview

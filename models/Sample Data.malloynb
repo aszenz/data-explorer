@@ -1,0 +1,95 @@
+>>>markdown
+# Sample Data Exploration
+
+This notebook demonstrates Malloy features using inline-generated sample data. It's useful for learning Malloy syntax and testing features without external data dependencies.
+
+**Data Sources:**
+- Employee data (inline SQL)
+- Project data (inline SQL)
+>>>malloy
+import { employees, projects } from './sample_data.malloy'
+>>>markdown
+## Part 1: Employee Analysis
+>>>markdown
+### 1.1 Employee Directory
+>>>malloy
+run: employees -> {
+    select: *
+}
+>>>markdown
+### 1.2 Workforce Overview
+
+Summary of the workforce including headcount, payroll, and salary distribution.
+>>>malloy
+# dashboard
+run: employees -> overview
+>>>markdown
+### 1.3 Department Breakdown
+
+Employee distribution and payroll by department.
+>>>malloy
+# bar_chart
+run: employees -> by_department
+>>>markdown
+### 1.4 Salary Band Distribution
+
+How employees are distributed across salary levels.
+>>>malloy
+# bar_chart
+run: employees -> by_salary_band
+>>>markdown
+### 1.5 Job Titles
+
+Employee count and average salary by title.
+>>>malloy
+run: employees -> by_title
+>>>markdown
+### 1.6 Department Hierarchy
+
+Departments with their roles and salary details.
+>>>malloy
+run: employees -> department_hierarchy
+>>>markdown
+### 1.7 Highest Paid Employees
+>>>malloy
+run: employees -> {
+    select: *
+    order_by: salary desc
+    limit: 5
+}
+>>>markdown
+## Part 2: Project Analysis
+>>>markdown
+### 2.1 Project List
+>>>malloy
+run: projects -> {
+    select: *
+}
+>>>markdown
+### 2.2 Project Portfolio Overview
+
+Summary of all projects including budget and status.
+>>>malloy
+# dashboard
+run: projects -> overview
+>>>markdown
+### 2.3 Projects by Department
+
+Budget allocation across departments.
+>>>malloy
+# bar_chart
+run: projects -> by_department
+>>>markdown
+### 2.4 Project Status Distribution
+
+Current status of all projects.
+>>>malloy
+# bar_chart
+run: projects -> by_status
+>>>markdown
+### 2.5 Largest Projects by Budget
+>>>malloy
+run: projects -> {
+    select: *
+    order_by: budget desc
+}

@@ -91,7 +91,7 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
         <>
           <span className="breadcrumb-separator">/</span>
           <span className="breadcrumb-item query">
-            <MalloyCodeBlock code={queryParam} />
+            <MalloyCodeBlock code={queryParam} showCopy={false} />
           </span>
         </>
       )}

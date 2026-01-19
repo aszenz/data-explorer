@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createHighlighterCore } from "@shikijs/core";
 import { createJavaScriptRegexEngine } from "@shikijs/engine-javascript";
 import malloyGrammar from "@malloydata/syntax-highlight/grammars/malloy/malloy.tmGrammar.json";
@@ -8,6 +8,7 @@ export default MalloyCodeBlock;
 
 type MalloyCodeBlockProps = {
   code: string;
+  showCopy?: boolean;
 };
 
 const malloyLang = {
@@ -28,9 +29,48 @@ async function getHighlighter() {
   return highlighterPromise;
 }
 
-function MalloyCodeBlock({ code }: MalloyCodeBlockProps): JSX.Element {
+function CopyIcon(): JSX.Element {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function CheckIcon(): JSX.Element {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function MalloyCodeBlock({
+  code,
+  showCopy = true,
+}: MalloyCodeBlockProps): JSX.Element {
   const [html, setHtml] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,21 +93,49 @@ function MalloyCodeBlock({ code }: MalloyCodeBlockProps): JSX.Element {
     };
   }, [code]);
 
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [code]);
+
+  const copyButton = showCopy ? (
+    <button
+      className={`code-copy-button ${copied ? "copied" : ""}`}
+      onClick={handleCopy}
+      title={copied ? "Copied!" : "Copy code"}
+    >
+      {copied ? <CheckIcon /> : <CopyIcon />}
+    </button>
+  ) : null;
+
   if (error) {
     return (
-      <pre>
-        <code>{code}</code>
-      </pre>
+      <div className="malloy-code-block">
+        {copyButton}
+        <pre>
+          <code>{code}</code>
+        </pre>
+      </div>
     );
   }
 
   if (!html) {
     return (
-      <pre>
-        <code>{code}</code>
-      </pre>
+      <div className="malloy-code-block">
+        {copyButton}
+        <pre>
+          <code>{code}</code>
+        </pre>
+      </div>
     );
   }
 
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <div className="malloy-code-block">
+      {copyButton}
+      <div dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  );
 }
