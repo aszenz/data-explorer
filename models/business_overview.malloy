@@ -1,0 +1,57 @@
+-- Business Overview Model
+-- Aggregates and combines data from multiple sources for cross-functional analysis
+import { orders, contracts } from './ecommerce_orders.malloy'
+import { sales_orders } from './sales_orders.malloy'
+import { invoices } from './invoices.malloy'
+
+-- Cross-model summary queries
+
+-- E-commerce revenue summary
+query: ecommerce_revenue is orders -> {
+    aggregate:
+        total_revenue
+        order_count
+        avg_order_value
+        customer_count
+}
+
+-- Sales orders summary
+query: sales_summary is sales_orders -> {
+    aggregate:
+        total_amount
+        order_count
+        total_units
+}
+
+-- Invoice summary
+query: invoice_summary is invoices -> {
+    aggregate:
+        invoice_count
+        total_net_amount
+        total_tax_amount
+}
+
+-- Contract summary
+query: contract_summary is contracts -> {
+    aggregate:
+        contract_count
+        total_contract_value
+        active_contracts
+}
+
+-- Full business overview combining all sources
+query: business_kpis is orders -> {
+    aggregate:
+        order_count
+        total_revenue
+        customer_count
+}
+
+-- Revenue by category comparison
+query: category_comparison is orders -> {
+    group_by: category
+    aggregate:
+        total_revenue
+        order_count
+        avg_order_value
+}

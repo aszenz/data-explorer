@@ -327,7 +327,7 @@ function createAppRouter({
             // if (undefined !== output.metadata.title) {
             //   document.title = output.metadata.title;
             // }
-            return output;
+            return { ...output, rawContent: notebookCode };
           },
         },
       ],

@@ -1,0 +1,63 @@
+>>>markdown
+# Sales Orders Analysis
+
+This notebook analyzes sales order data from an Excel spreadsheet, examining performance by items, sales representatives, and regions.
+>>>malloy
+import { sales_orders } from './sales_orders.malloy'
+>>>markdown
+## 1. Data Preview
+
+Let's start by examining the raw sales order data.
+>>>malloy
+run: sales_orders -> {
+    select: *
+    limit: 100
+}
+>>>markdown
+## 2. Sales Overview Dashboard
+
+High-level summary of sales performance with breakdowns by item, rep, region, and time.
+>>>malloy
+# dashboard
+run: sales_orders -> overview
+>>>markdown
+## 3. Performance by Item
+
+Which items are generating the most revenue and units sold?
+>>>malloy
+# bar_chart
+run: sales_orders -> by_item
+>>>markdown
+## 4. Sales Representative Performance
+
+Analysis of each sales rep's performance with their item breakdown.
+>>>malloy
+run: sales_orders -> rep_performance
+>>>markdown
+## 5. Regional Analysis
+
+Regional performance with top reps and items in each region.
+>>>malloy
+run: sales_orders -> regional_analysis
+>>>markdown
+## 6. Monthly Trends
+
+How do sales metrics trend over time?
+>>>malloy
+run: sales_orders -> by_month
+>>>markdown
+## 7. KPI Metrics with Trends
+
+Key performance indicators with monthly sparkline trends.
+>>>malloy
+run: sales_orders -> metrics
+>>>markdown
+## 8. Top Orders by Value
+
+Largest individual orders.
+>>>malloy
+run: sales_orders -> {
+    select: *
+    order_by: `Total` desc
+    limit: 20
+}

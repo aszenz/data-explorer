@@ -1,13 +1,46 @@
+-- Invoice Analysis Model
+-- Analyzes invoice data including status, amounts, and tax metrics
 source: invoices is duckdb.table('data/invoices.parquet') extend {
+    -- Measures
+    measure: invoice_count is count()
     measure: total_tax_amount is tax_amount.sum()
     measure: total_net_amount is total_amount.sum()
-    measure: invoice_count is count()
+    measure: avg_invoice_amount is total_amount.avg()
+    measure: avg_tax_amount is tax_amount.avg()
+    measure: tax_rate is total_tax_amount / total_net_amount
+
+    -- Views by dimension
     view: by_status is {
         group_by: status
         aggregate:
             invoice_count
             total_net_amount
             total_tax_amount
+            avg_invoice_amount
+    }
+
+    -- Dashboard overview with KPIs and breakdowns
+    # dashboard
+    view: overview is {
+        aggregate:
+            invoice_count
+            total_net_amount
+            total_tax_amount
+            avg_invoice_amount
+        # bar_chart
+        nest: by_status
     }
 }
-query: `All invoices` is invoices -> {select: *}
+
+-- Named queries for common analyses
+query: all_invoices is invoices -> { select: * }
+
+query: invoice_summary is invoices -> {
+    aggregate:
+        invoice_count
+        total_net_amount
+        total_tax_amount
+        avg_invoice_amount
+}
+
+query: status_breakdown is invoices -> by_status

@@ -18,7 +18,15 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
       <div className="home-header">
         <h1 className="home-title">Data Explorer</h1>
         <p className="home-subtitle">
-          Explore and analyze your Malloy models and notebooks
+          Explore and analyze your data with{" "}
+          <a
+            href="https://www.malloydata.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="malloy-link"
+          >
+            Malloy
+          </a>
         </p>
       </div>
 

@@ -317,6 +317,18 @@ button.breadcrumb-item.current {
   margin: 0;
 }
 
+.malloy-link {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.malloy-link:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
 .home-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -858,6 +870,10 @@ a.raw-data-item:hover .raw-data-download-icon {
   gap: var(--spacing-md);
 }
 
+.notebook-title-row .download-button {
+  margin-left: auto;
+}
+
 .notebook-sources {
   display: flex;
   align-items: center;
@@ -1042,6 +1058,48 @@ a.raw-data-item:hover .raw-data-download-icon {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* === MALLOY CODE BLOCK === */
+.malloy-code-block {
+  position: relative;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: var(--spacing-sm);
+  left: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.malloy-code-block:hover .code-copy-button {
+  opacity: 1;
+}
+
+.code-copy-button:hover {
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
+
+.code-copy-button.copied {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+  opacity: 1;
 }
 
 /* === UTILITY CLASSES === */

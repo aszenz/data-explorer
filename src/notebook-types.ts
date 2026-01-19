@@ -36,4 +36,5 @@ type NotebookOutput = {
     title?: string;
   };
   sources: SourceReference[];
+  rawContent?: string;
 };

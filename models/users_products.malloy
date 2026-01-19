@@ -1,0 +1,105 @@
+-- JSON Data Analysis Model
+-- Demonstrates working with JSON and JSONL data formats
+
+-- User Data Source (JSON format)
+source: users is duckdb.table('data/users.json') extend {
+    measure: user_count is count()
+    measure: avg_age is age.avg()
+    measure: min_age is age.min()
+    measure: max_age is age.max()
+
+    view: by_city is {
+        group_by: city
+        aggregate:
+            user_count
+            avg_age
+    }
+
+    view: by_age_group is {
+        group_by: age_group is
+            pick 'Young (< 25)' when age < 25
+            pick 'Adult (25-34)' when age < 35
+            pick 'Middle Age (35-49)' when age < 50
+            else 'Senior (50+)'
+        aggregate:
+            user_count
+            avg_age
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            user_count
+            avg_age
+            min_age
+            max_age
+        # bar_chart
+        nest: by_city
+        # bar_chart
+        nest: by_age_group
+    }
+}
+
+-- Product Data Source (JSONL format)
+source: products is duckdb.table('data/products.jsonl') extend {
+    measure: product_count is count()
+    measure: total_inventory_value is price.sum()
+    measure: avg_price is price.avg()
+    measure: min_price is price.min()
+    measure: max_price is price.max()
+    measure: in_stock_count is count() { where: in_stock = true }
+    measure: out_of_stock_count is count() { where: in_stock = false }
+    measure: stock_rate is in_stock_count / product_count
+
+    view: by_category is {
+        group_by: category
+        aggregate:
+            product_count
+            avg_price
+            in_stock_count
+            total_inventory_value
+    }
+
+    view: by_price_range is {
+        group_by: price_range is
+            pick 'Budget (< $20)' when price < 20
+            pick 'Mid-range ($20-99)' when price < 100
+            pick 'Premium ($100-499)' when price < 500
+            else 'Luxury ($500+)'
+        aggregate:
+            product_count
+            total_inventory_value
+            avg_price
+    }
+
+    view: by_stock_status is {
+        group_by: stock_status is
+            pick 'In Stock' when in_stock = true
+            else 'Out of Stock'
+        aggregate:
+            product_count
+            total_inventory_value
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            product_count
+            total_inventory_value
+            avg_price
+            in_stock_count
+            out_of_stock_count
+        # bar_chart
+        nest: by_category
+        # bar_chart
+        nest: by_price_range
+        # bar_chart
+        nest: by_stock_status
+    }
+}
+
+-- Named queries
+query: all_users is users -> { select: * }
+query: all_products is products -> { select: * }
+query: user_demographics is users -> overview
+query: product_catalog is products -> overview

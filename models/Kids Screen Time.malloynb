@@ -1,0 +1,85 @@
+>>>markdown
+# Kids Screen Time Analysis
+
+This notebook analyzes screen time patterns among Indian children, examining demographics, device usage, health impacts, and compliance with recommended limits.
+
+**Data Source:** Indian Kids Screen Time Survey
+>>>malloy
+import { screen_time } from './kids_screen_time.malloy'
+>>>markdown
+## 1. Data Preview
+
+Let's examine the survey data structure.
+>>>malloy
+run: screen_time -> {
+    select: *
+    limit: 50
+}
+>>>markdown
+## 2. Overview Dashboard
+
+Comprehensive summary of screen time patterns across all dimensions.
+>>>malloy
+# dashboard
+run: screen_time -> overview
+>>>markdown
+## 3. Screen Time by Gender
+
+How does screen time differ between male and female participants?
+>>>malloy
+# bar_chart
+run: screen_time -> by_gender
+>>>markdown
+## 4. Urban vs Rural Patterns
+
+Comparing screen time habits between urban and rural areas.
+>>>malloy
+# bar_chart
+run: screen_time -> by_location
+>>>markdown
+## 5. Device Usage Analysis
+
+Which devices are most commonly used and their associated screen times?
+>>>malloy
+# bar_chart
+run: screen_time -> by_device
+>>>markdown
+## 6. Age Group Analysis
+
+How does screen time vary across different age groups?
+>>>malloy
+run: screen_time -> by_age_group
+>>>markdown
+## 7. Health Impact Analysis
+
+Examining the relationship between screen time and reported health impacts.
+>>>malloy
+run: screen_time -> by_health_impact
+>>>markdown
+## 8. Recommended Limit Compliance
+
+How many children exceed the recommended screen time limits?
+>>>malloy
+run: screen_time -> by_limit_compliance
+>>>markdown
+## 9. Gender-Device Deep Dive
+
+Detailed analysis of device preferences by gender.
+>>>malloy
+run: screen_time -> gender_device_analysis
+>>>markdown
+## 10. Location-Health Correlation
+
+Examining health impacts across urban and rural areas.
+>>>malloy
+run: screen_time -> location_health_analysis
+>>>markdown
+## 11. High Screen Time Cases
+
+Children with the highest daily screen time.
+>>>malloy
+run: screen_time -> {
+    select: *
+    order_by: Avg_Daily_Screen_Time_hr desc
+    limit: 20
+}

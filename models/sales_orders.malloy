@@ -1,38 +1,139 @@
+-- Sales Orders Analysis Model
+-- Analyzes sales data from Excel spreadsheet including items, reps, and regions
 source: sales_orders is duckdb.table('data/sales_orders.xlsx') extend {
+    -- Core measures
+    measure: order_count is count()
     measure: total_amount is `Total`.sum()
-    measure: no_of_units is `Units`.sum()
+    measure: total_units is `Units`.sum()
     measure: avg_unit_cost is `Unit Cost`.avg()
+    measure: avg_order_value is `Total`.avg()
+    measure: total_unit_cost is `Unit Cost`.sum()
+    measure: profit_margin is (total_amount - total_unit_cost) / total_amount
 
+    -- Dimensional views
     view: by_item is {
         group_by: `Item`
-        aggregate: total_amount, no_of_units, avg_unit_cost
+        aggregate:
+            order_count
+            total_amount
+            total_units
+            avg_unit_cost
+            avg_order_value
     }
+
     view: by_rep is {
         group_by: `Rep`
-        aggregate: total_amount, no_of_units, avg_unit_cost
+        aggregate:
+            order_count
+            total_amount
+            total_units
+            avg_order_value
     }
 
     view: by_region is {
         group_by: `Region`
-        aggregate: total_amount, no_of_units, avg_unit_cost
+        aggregate:
+            order_count
+            total_amount
+            total_units
+            avg_order_value
     }
 
     view: by_month is {
-        group_by: OrderDate.month
-        aggregate: total_amount, no_of_units, avg_unit_cost
+        group_by: order_month is OrderDate.month
+        aggregate:
+            order_count
+            total_amount
+            total_units
+        order_by: order_month
     }
 
+    -- Rep performance view with item breakdown
+    view: rep_performance is {
+        group_by: `Rep`
+        aggregate:
+            order_count
+            total_amount
+            total_units
+            avg_order_value
+        # bar_chart
+        nest: items_sold is {
+            group_by: `Item`
+            aggregate:
+                total_amount
+                total_units
+        }
+    }
+
+    -- Regional analysis with rep breakdown
+    view: regional_analysis is {
+        group_by: `Region`
+        aggregate:
+            order_count
+            total_amount
+        # bar_chart
+        nest: top_reps is {
+            group_by: `Rep`
+            aggregate:
+                total_amount
+                order_count
+            limit: 5
+        }
+        # bar_chart
+        nest: top_items is {
+            group_by: `Item`
+            aggregate:
+                total_amount
+            limit: 5
+        }
+    }
+
+    -- KPI metrics view with trends
+    view: metrics is {
+        aggregate: total_amount, order_count, total_units, avg_order_value
+        # bar_chart
+        nest: monthly_revenue is {
+            group_by: `month` is OrderDate.month
+            aggregate: revenue is total_amount
+            order_by: `month`
+        }
+        # bar_chart
+        nest: monthly_orders is {
+            group_by: `month` is OrderDate.month
+            aggregate: orders is order_count
+            order_by: `month`
+        }
+        # bar_chart
+        nest: monthly_units is {
+            group_by: `month` is OrderDate.month
+            aggregate: units is total_units
+            order_by: `month`
+        }
+    }
+
+    -- Dashboard overview
     # dashboard
     view: overview is {
-        aggregate: total_amount, no_of_units, avg_unit_cost
-        nest: 
-            # bar_chart
-            by_item, 
-            # bar_chart
-            by_rep, 
-            # bar_chart
-            by_region, 
-            # bar_chart
-            by_month
+        aggregate:
+            order_count
+            total_amount
+            total_units
+            avg_unit_cost
+            avg_order_value
+        # bar_chart
+        nest: by_item
+        # bar_chart
+        nest: by_rep
+        # bar_chart
+        nest: by_region
+        # bar_chart
+        nest: by_month
     }
 }
+
+-- Named queries
+query: all_orders is sales_orders -> { select: * }
+query: summary is sales_orders -> overview
+query: rep_report is sales_orders -> rep_performance
+query: regional_report is sales_orders -> regional_analysis
+query: kpi_dashboard is sales_orders -> metrics

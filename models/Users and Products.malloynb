@@ -1,0 +1,85 @@
+>>>markdown
+# Users & Products Analysis
+
+This notebook demonstrates working with JSON data formats in Malloy, analyzing user demographics and product inventory data.
+
+**Data Sources:**
+- `users.json` - User demographic data in JSON format
+- `products.jsonl` - Product catalog in JSON Lines format
+>>>malloy
+import { users, products } from './users_products.malloy'
+>>>markdown
+## Part 1: User Analysis
+>>>markdown
+### 1.1 User Data Preview
+>>>malloy
+run: users -> {
+    select: *
+}
+>>>markdown
+### 1.2 User Demographics Overview
+
+Summary of user demographics including age distribution and city breakdown.
+>>>malloy
+# dashboard
+run: users -> overview
+>>>markdown
+### 1.3 Users by City
+
+Distribution of users across different cities.
+>>>malloy
+# bar_chart
+run: users -> by_city
+>>>markdown
+### 1.4 Age Group Distribution
+
+Breakdown of users by age groups.
+>>>malloy
+# bar_chart
+run: users -> by_age_group
+>>>markdown
+## Part 2: Product Analysis
+>>>markdown
+### 2.1 Product Data Preview
+>>>malloy
+run: products -> {
+    select: *
+}
+>>>markdown
+### 2.2 Product Inventory Overview
+
+Summary of product inventory including pricing and stock status.
+>>>malloy
+# dashboard
+run: products -> overview
+>>>markdown
+### 2.3 Products by Category
+
+Product distribution across categories.
+>>>malloy
+# bar_chart
+run: products -> by_category
+>>>markdown
+### 2.4 Price Range Analysis
+
+Products grouped by price tiers.
+>>>malloy
+# bar_chart
+run: products -> by_price_range
+>>>markdown
+### 2.5 Stock Status
+
+In-stock vs out-of-stock products.
+>>>malloy
+# bar_chart
+run: products -> by_stock_status
+>>>markdown
+### 2.6 Premium Products
+
+Products priced above $100.
+>>>malloy
+run: products -> {
+    select: *
+    where: price > 100
+    order_by: price desc
+}
