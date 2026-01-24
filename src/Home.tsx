@@ -4,6 +4,7 @@ import Card from "./Card";
 import ModelIcon from "../img/model-icon.svg?react";
 import NotebookIcon from "../img/notebook-icon.svg?react";
 import FaviconLogo from "../img/favicon-logo.svg?react";
+import { humanizeName } from "./utils/humanize";
 
 export default Home;
 
@@ -57,7 +58,7 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
                   key={modelName}
                   to={`/model/${encodeURIComponent(modelName)}`}
                   icon={<ModelIcon aria-label="Data model" />}
-                  title={modelName}
+                  title={humanizeName(modelName)}
                   description="Semantic data model"
                   className="model-card"
                 />
@@ -91,7 +92,7 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
                   key={notebookName}
                   to={`/notebook/${encodeURIComponent(notebookName)}`}
                   icon={<NotebookIcon aria-label="Notebook" />}
-                  title={notebookName}
+                  title={humanizeName(notebookName)}
                   description="Visual data story"
                   className="notebook-card"
                 />

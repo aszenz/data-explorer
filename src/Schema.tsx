@@ -76,6 +76,7 @@ function SchemaRenderer({
 }: SchemaRendererProps): JSX.Element {
   const hidden = !defaultShow;
   const hasQueries = queries.length > 0;
+  const hasExplores = explores.length > 0;
 
   // Filter dataSources to only show files referenced in the model
   const referencedDataSources = React.useMemo(() => {
@@ -84,24 +85,36 @@ function SchemaRenderer({
   }, [model, dataSources]);
 
   const hasDataSources = referencedDataSources.length > 0;
+
+  // Set default tab - prefer sources, but fall back to queries or code if sources is empty
+  const getDefaultTab = (): "sources" | "queries" | "code" | "data" => {
+    if (hasExplores) return "sources";
+    if (hasQueries) return "queries";
+    if (modelCode) return "code";
+    if (hasDataSources) return "data";
+    return "sources";
+  };
+
   const [activeTab, setActiveTab] = React.useState<
     "sources" | "queries" | "code" | "data"
-  >("sources");
+  >(getDefaultTab());
 
   return (
     <div className="schema">
       <div className="schema-tabs">
-        <button
-          type="button"
-          className={`schema-tab ${activeTab === "sources" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("sources");
-          }}
-        >
-          <DatabaseIcon aria-label="Data Sources" />
-          Data Sources
-          <span className="count-badge">{explores.length}</span>
-        </button>
+        {hasExplores && (
+          <button
+            type="button"
+            className={`schema-tab ${activeTab === "sources" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("sources");
+            }}
+          >
+            <DatabaseIcon aria-label="Data Sources" />
+            Data Sources
+            <span className="count-badge">{explores.length}</span>
+          </button>
+        )}
         {hasQueries && (
           <button
             type="button"
@@ -159,7 +172,7 @@ function SchemaRenderer({
             <MalloyCodeBlock code={modelCode} />
           </div>
         )}
-        {activeTab === "sources" && (
+        {activeTab === "sources" && hasExplores && (
           <ul>
             {explores.sort(sortByName).map((explore) => (
               <StructItem
