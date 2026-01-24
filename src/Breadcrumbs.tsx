@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import {
   Link,
   useParams,
@@ -9,6 +8,8 @@ import {
 import { useRuntime } from "./contexts";
 import MalloyCodeBlock from "./MalloyCodeBlock";
 import { type JSX } from "react/jsx-runtime";
+import ArrowLeftIcon from "../img/arrow-left.svg?react";
+import Menu from "./Menu";
 
 export default Breadcrumbs;
 
@@ -49,19 +50,7 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
         }}
         title="Go back"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M19 12H5" />
-          <path d="M12 19l-7-7 7-7" />
-        </svg>
+        <ArrowLeftIcon aria-label="Go back" />
       </button>
       <Link to="/" className="breadcrumb-item">
         Home
@@ -142,26 +131,6 @@ function BreadcrumbDropdown({
   items: DropdownItem[];
   isCurrent?: boolean;
 }): JSX.Element {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
   if (items.length <= 1) {
     return isCurrent ? (
       <span className="breadcrumb-item current">{label}</span>
@@ -173,36 +142,12 @@ function BreadcrumbDropdown({
   }
 
   return (
-    <div
-      className={`breadcrumb-dropdown ${isOpen ? "open" : ""}`}
-      ref={dropdownRef}
-    >
-      <button
-        type="button"
-        className={`breadcrumb-item ${isCurrent ? "current" : ""}`}
-        onClick={() => {
-          setIsOpen(!isOpen);
-        }}
-      >
-        {label}
-      </button>
-      {isOpen && (
-        <ul className="breadcrumb-menu">
-          {items.map((item) => (
-            <li key={item.name}>
-              <Link
-                to={item.to}
-                className={item.active ? "active" : ""}
-                onClick={() => {
-                  setIsOpen(false);
-                }}
-              >
-                {item.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="breadcrumb-dropdown">
+      <Menu
+        trigger={label}
+        items={items}
+        triggerClassName={`breadcrumb-item ${isCurrent ? "current" : ""}`}
+      />
     </div>
   );
 }

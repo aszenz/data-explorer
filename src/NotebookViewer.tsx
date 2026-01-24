@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { Link } from "react-router";
 import NotebookCellRenderer from "./NotebookCellRenderer";
 import type { NotebookOutput } from "./notebook-types";
+import DownloadIcon from "../img/download.svg?react";
 
 export default NotebookViewer;
 export type { NotebookViewerProps };
@@ -12,25 +13,6 @@ type NotebookViewerProps = {
   name?: string | undefined;
   showCode?: boolean;
 };
-
-function DownloadIcon(): JSX.Element {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
 
 function NotebookViewer({
   notebook,
@@ -68,7 +50,7 @@ function NotebookViewer({
               onClick={handleDownload}
               title="Download notebook"
             >
-              <DownloadIcon />
+              <DownloadIcon aria-label="Download" />
               Download
             </button>
           )}

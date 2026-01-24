@@ -16,7 +16,7 @@ function ModelHome(): JSX.Element {
     <div className="model-home">
       <div className="model-header">
         <div className="model-header-content">
-          <h1 className="model-name">{modelName}</h1>
+          <h1 className="model-name">Malloy model {modelName}</h1>
           <p className="model-type">Malloy Data Model</p>
         </div>
       </div>
