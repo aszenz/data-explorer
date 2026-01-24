@@ -2,10 +2,10 @@ import type {
   CellOutput,
   NotebookOutput,
   ParsedNotebook,
-  SourceReference,
 } from "./notebook-types";
 import type { RuntimeSetup } from "./types";
 import { executeMalloyQuery } from "./helpers";
+import { extractNotebookSources } from "./notebook-parser";
 
 export { executeNotebook };
 
@@ -18,7 +18,7 @@ async function executeNotebook(
   console.log("Malloy Model to execute:", notebookModel);
   const { modelMaterializer } = await getRuntimeSetup(notebookName);
 
-  const sources: SourceReference[] = extractNotebookSources(notebook.cells);
+  const sources = extractNotebookSources(notebook.cells);
 
   const cellOutputs: CellOutput[] = await Promise.all(
     notebook.cells.map(async (cell) => {
@@ -60,39 +60,4 @@ async function executeNotebook(
 
 function assertUnreachable(_: never): never {
   throw new Error("Didn't expect to get here");
-}
-
-/**
- * Extract source references from notebook cells
- *
- * Parses import statements like:
- * import {source1, source2} from './model.malloy'
- *
- * @param cells - Array of notebook cells
- * @returns Array of unique source references with model names
- */
-function extractNotebookSources(
-  cells: ParsedNotebook["cells"],
-): SourceReference[] {
-  const sourceReferences = cells.flatMap((cell) => {
-    if (cell.type !== "malloy") return [];
-
-    // Match: import {source1, source2} from './model.malloy'
-    const match = cell.code.match(
-      /import\s*\{([^}]+)\}\s*from\s*['"]\.\/([^'"]+)\.malloy['"]/,
-    );
-
-    if (!match?.[1] || !match[2]) return [];
-
-    const sourceNames = match[1].split(",").map((s) => s.trim());
-    const modelName = match[2];
-
-    return sourceNames.map((name) => ({ name, model: modelName }));
-  });
-
-  // Deduplicate by source name
-  return sourceReferences.filter(
-    (source, index, arr) =>
-      arr.findIndex((s) => s.name === source.name) === index,
-  );
 }
