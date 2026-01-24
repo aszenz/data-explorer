@@ -1,6 +1,9 @@
-import { Link } from "react-router";
 import "./index.css";
 import { type JSX } from "react/jsx-runtime";
+import Card from "./Card";
+import ModelIcon from "../img/model-icon.svg?react";
+import NotebookIcon from "../img/notebook-icon.svg?react";
+import FaviconLogo from "../img/favicon-logo.svg?react";
 
 export default Home;
 
@@ -18,19 +21,19 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
       <div className="home-header">
         <h1 className="home-title">Data Explorer</h1>
         <p className="home-subtitle">
-          Explore and analyze your data with{" "}
+          Explore and analyze your{" "}
           <a
             href="https://www.malloydata.dev/"
             target="_blank"
             rel="noopener noreferrer"
             className="malloy-link"
           >
-            Malloy
+            Malloy models and notebooks
           </a>
         </p>
       </div>
 
-      <div className="home-columns">
+      <div className="home-content-with-logo">
         <div className="home-section">
           <div className="section-header">
             <h2>Data Models</h2>
@@ -44,46 +47,26 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
             <div className="empty-state">
               <p>No models available</p>
               <p className="empty-state-hint">
-                Add .malloy files to the /models directory
+                Create Malloy model files (.malloy) to get started
               </p>
             </div>
           ) : (
             <div className="card-grid">
-              {Object.keys(models).map((modelName) => {
-                return (
-                  <Link
-                    key={modelName}
-                    to={`/model/${encodeURIComponent(modelName)}`}
-                    className="card model-card"
-                  >
-                    <div className="card-icon">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 3l9 5v8l-9 5-9-5V8l9-5z" />
-                        <path d="M12 8l9-5" />
-                        <path d="M12 8L3 3" />
-                        <path d="M12 8v13" />
-                      </svg>
-                    </div>
-                    <div className="card-content">
-                      <h3 className="card-title">{modelName}</h3>
-                      <p className="card-description">Semantic data model</p>
-                    </div>
-                    <div className="card-arrow">→</div>
-                  </Link>
-                );
-              })}
+              {Object.keys(models).map((modelName) => (
+                <Card
+                  key={modelName}
+                  to={`/model/${encodeURIComponent(modelName)}`}
+                  icon={<ModelIcon aria-label="Data model" />}
+                  title={modelName}
+                  description="Semantic data model"
+                  className="model-card"
+                />
+              ))}
             </div>
           )}
         </div>
+
+        <FaviconLogo className="home-logo-center" />
 
         <div className="home-section">
           <div className="section-header">
@@ -98,44 +81,21 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
             <div className="empty-state">
               <p>No notebooks available</p>
               <p className="empty-state-hint">
-                Add .malloynb files to the /models directory
+                Create Malloy notebook files (.malloynb) to get started
               </p>
             </div>
           ) : (
             <div className="card-grid">
-              {Object.keys(notebooks).map((notebookName) => {
-                return (
-                  <Link
-                    key={notebookName}
-                    to={`/notebook/${encodeURIComponent(notebookName)}`}
-                    className="card notebook-card"
-                  >
-                    <div className="card-icon">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect x="4" y="2" width="16" height="20" rx="2" />
-                        <path d="M8 6h8" />
-                        <path d="M8 10h8" />
-                        <path d="M8 14l2 2 2-3 2 1 2-2" />
-                        <path d="M8 18h4" />
-                      </svg>
-                    </div>
-                    <div className="card-content">
-                      <h3 className="card-title">{notebookName}</h3>
-                      <p className="card-description">Visual data story</p>
-                    </div>
-                    <div className="card-arrow">→</div>
-                  </Link>
-                );
-              })}
+              {Object.keys(notebooks).map((notebookName) => (
+                <Card
+                  key={notebookName}
+                  to={`/notebook/${encodeURIComponent(notebookName)}`}
+                  icon={<NotebookIcon aria-label="Notebook" />}
+                  title={notebookName}
+                  description="Visual data story"
+                  className="notebook-card"
+                />
+              ))}
             </div>
           )}
         </div>

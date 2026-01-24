@@ -35,6 +35,13 @@ import SqlNativeIcon from "../img/sql-database.svg?react";
 import StringIcon from "../img/string.svg?react";
 import TimeIcon from "../img/time.svg?react";
 import UnknownIcon from "../img/unknown.svg?react";
+import LightningIcon from "../img/lightning.svg?react";
+import CodeIcon from "../img/code.svg?react";
+import DownloadIcon from "../img/download.svg?react";
+import FileIcon from "../img/file.svg?react";
+import EyeIcon from "../img/eye.svg?react";
+import CompassIcon from "../img/compass.svg?react";
+import DatabaseIcon from "../img/database-icon.svg?react";
 import { type JSX } from "react/jsx-runtime";
 
 export { SchemaRenderer };
@@ -131,20 +138,7 @@ function SchemaRenderer({
             setActiveTab("sources");
           }}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <ellipse cx="12" cy="5" rx="9" ry="3" />
-            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-          </svg>
+          <DatabaseIcon aria-label="Data Sources" />
           Data Sources
           <span className="count-badge">{explores.length}</span>
         </button>
@@ -156,18 +150,7 @@ function SchemaRenderer({
               setActiveTab("queries");
             }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
+            <LightningIcon aria-label="Named Queries" />
             Named Queries
             <span className="count-badge">{queries.length}</span>
           </button>
@@ -180,19 +163,7 @@ function SchemaRenderer({
               setActiveTab("code");
             }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="16 18 22 12 16 6" />
-              <polyline points="8 6 2 12 8 18" />
-            </svg>
+            <CodeIcon aria-label="Code" />
             Malloy Definition
           </button>
         )}
@@ -204,20 +175,7 @@ function SchemaRenderer({
               setActiveTab("data");
             }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+            <DownloadIcon aria-label="Raw Data" />
             Raw Data
             <span className="count-badge">{referencedDataSources.length}</span>
           </button>
@@ -267,37 +225,15 @@ function SchemaRenderer({
                 className="raw-data-item"
                 title={`Download ${source.name}.${source.fileType}`}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="raw-data-icon"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
+                <FileIcon className="raw-data-icon" aria-label="File" />
                 <span className="raw-data-name">{source.name}</span>
-                <span className="raw-data-type">{source.fileType.toUpperCase()}</span>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                <span className="raw-data-type">
+                  {source.fileType.toUpperCase()}
+                </span>
+                <DownloadIcon
                   className="raw-data-download-icon"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
+                  aria-label="Download"
+                />
               </a>
             ))}
           </div>
@@ -416,19 +352,7 @@ function StructItem({
               void onClickingPreview(e);
             }}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
+            <EyeIcon aria-label="Preview" />
             Preview
           </button>
           <button
@@ -438,19 +362,7 @@ function StructItem({
               void onClickingExplore(e);
             }}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-            </svg>
+            <CompassIcon aria-label="Explore" />
             Explore
           </button>
         </div>

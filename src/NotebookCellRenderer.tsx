@@ -5,6 +5,7 @@ import MalloyCodeBlock from "./MalloyCodeBlock";
 import type { CellOutput } from "./notebook-types";
 import RenderedResult from "./RenderedResult";
 import { type JSX } from "react/jsx-runtime";
+import ExpandIcon from "../img/expand.svg?react";
 
 export default NotebookCellRenderer;
 
@@ -67,18 +68,7 @@ function NotebookCellRenderer({
           aria-label="Expand"
           title="Expand"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
-          >
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-          </svg>
+          <ExpandIcon aria-label="Expand" />
         </button>
       </div>
       <div
@@ -91,7 +81,8 @@ function NotebookCellRenderer({
         <button
           type="button"
           className="popover-close"
-          onClick={() => popOverRef.current?.hidePopover()}
+          popoverTarget={`cell-result-expand-${cellIndex.toString()}`}
+          popoverTargetAction="hide"
           aria-label="Close"
         >
           &times;
