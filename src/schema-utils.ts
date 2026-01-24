@@ -8,12 +8,14 @@ import type {
   AtomicTypeDef,
   Explore,
   Field,
+  Model,
   ModelDef,
   RepeatedRecordTypeDef,
   SourceDef,
   StructDef,
 } from "@malloydata/malloy";
 import { JoinRelationship, isSourceDef } from "@malloydata/malloy";
+import type { DataSourceInfo } from "./types";
 
 export type { ModelDef, Explore, Field };
 export {
@@ -24,6 +26,7 @@ export {
   getTypeLabel,
   quoteIfNecessary,
   getSourceDef,
+  extractReferencedDataFiles,
 };
 
 type FieldType =
@@ -149,6 +152,59 @@ function getSourceDef(modelDef: ModelDef, sourceName: string): SourceDef {
     return result;
   }
   throw new Error(`Not a source: ${sourceName}`);
+}
+
+/**
+ * Extract table/file references from the compiled Malloy model using the Malloy API.
+ * This function analyzes the compiled model's source definitions to identify
+ * which data files (tables) are actually referenced in the model.
+ *
+ * @param model - The compiled Malloy model
+ * @param dataSources - Array of available data sources to filter
+ * @returns Filtered array containing only the data sources referenced in the model
+ */
+function extractReferencedDataFiles(
+  model: Model,
+  dataSources: DataSourceInfo[],
+): DataSourceInfo[] {
+  const referencedPaths = new Set<string>();
+
+  // Access the ModelDef to get all sources
+  const modelDef = model._modelDef;
+
+  // Iterate through all contents in the model
+  for (const [_name, obj] of Object.entries(modelDef.contents)) {
+    // Check if this is a source definition
+    if (isSourceDef(obj)) {
+      // If it's a table source, extract the table path
+      if (obj.type === "table") {
+        const tablePath = obj.tablePath;
+
+        // Remove 'duckdb:' prefix if present
+        const cleanPath = tablePath.replace(/^duckdb:/, "");
+
+        referencedPaths.add(cleanPath);
+
+        // Also add without 'data/' prefix if present, or with it
+        if (cleanPath.startsWith("data/")) {
+          referencedPaths.add(cleanPath.substring(5));
+        } else {
+          referencedPaths.add(`data/${cleanPath}`);
+        }
+      }
+    }
+  }
+
+  // Filter dataSources to only include referenced files
+  return dataSources.filter((source) => {
+    const fileName = `${source.name}.${source.fileType}`;
+    const pathWithData = `data/${fileName}`;
+    return (
+      referencedPaths.has(fileName) ||
+      referencedPaths.has(pathWithData) ||
+      referencedPaths.has(source.path.replace("/models/", ""))
+    );
+  });
 }
 
 /*
