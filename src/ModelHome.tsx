@@ -24,6 +24,7 @@ function ModelHome(): JSX.Element {
         <SchemaRenderer
           explores={runtime.model.exportedExplores}
           queries={runtime.model.namedQueries}
+          model={runtime.model}
           modelCode={runtime.modelCode}
           dataSources={runtime.dataSources}
           defaultShow

@@ -9,12 +9,14 @@ import {
   type Field,
   type NamedQuery,
   type QueryField,
+  type Model,
 } from "@malloydata/malloy";
 import MalloyCodeBlock from "./MalloyCodeBlock";
 import type { DataSourceInfo } from "./types";
 
 import {
   exploreSubtype,
+  extractReferencedDataFiles,
   fieldType,
   getTypeLabel,
   isFieldAggregate,
@@ -50,6 +52,7 @@ export type { SchemaRendererProps };
 type SchemaRendererProps = {
   explores: Explore[];
   queries: NamedQuery[];
+  model?: Model;
   modelCode?: string;
   dataSources?: DataSourceInfo[];
   onFieldClick: (_field: Field) => void | Promise<void>;
@@ -59,53 +62,10 @@ type SchemaRendererProps = {
   defaultShow: boolean;
 };
 
-/**
- * Extract table/file references from Malloy model code
- */
-function extractReferencedDataFiles(
-  modelCode: string,
-  dataSources: DataSourceInfo[],
-): DataSourceInfo[] {
-  // Match patterns like table('duckdb:path/file.ext') or table("duckdb:path/file.ext")
-  // Also match from() and similar patterns
-  const tablePatterns = [
-    /table\s*\(\s*['"](?:duckdb:)?([^'"]+)['"]\s*\)/gi,
-    /from\s*\(\s*['"](?:duckdb:)?([^'"]+)['"]\s*\)/gi,
-  ];
-
-  const referencedPaths = new Set<string>();
-
-  for (const pattern of tablePatterns) {
-    let match;
-    while ((match = pattern.exec(modelCode)) !== null) {
-      const path = match[1];
-      if (path) {
-        referencedPaths.add(path);
-        // Also add without 'data/' prefix if present, or with it
-        if (path.startsWith("data/")) {
-          referencedPaths.add(path.substring(5));
-        } else {
-          referencedPaths.add(`data/${path}`);
-        }
-      }
-    }
-  }
-
-  // Filter dataSources to only include referenced files
-  return dataSources.filter((source) => {
-    const fileName = `${source.name}.${source.fileType}`;
-    const pathWithData = `data/${fileName}`;
-    return (
-      referencedPaths.has(fileName) ||
-      referencedPaths.has(pathWithData) ||
-      referencedPaths.has(source.path.replace("/models/", ""))
-    );
-  });
-}
-
 function SchemaRenderer({
   explores,
   queries,
+  model,
   modelCode,
   dataSources,
   onFieldClick,
@@ -119,9 +79,9 @@ function SchemaRenderer({
 
   // Filter dataSources to only show files referenced in the model
   const referencedDataSources = React.useMemo(() => {
-    if (!modelCode || !dataSources) return [];
-    return extractReferencedDataFiles(modelCode, dataSources);
-  }, [modelCode, dataSources]);
+    if (undefined === model || undefined === dataSources) return [];
+    return extractReferencedDataFiles(model, dataSources);
+  }, [model, dataSources]);
 
   const hasDataSources = referencedDataSources.length > 0;
   const [activeTab, setActiveTab] = React.useState<
