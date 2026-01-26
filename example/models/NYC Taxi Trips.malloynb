@@ -1,0 +1,57 @@
+>>>markdown
+# NYC Taxi Trips Analysis
+
+Analyze New York City yellow taxi trip data. This dataset contains trip records including pickup/dropoff times, distances, fares, tips, and payment methods.
+
+**Data Source:** [codelion/nyctaxi](https://huggingface.co/datasets/codelion/nyctaxi) on Hugging Face
+
+>>>malloy
+import "nyc_taxi.malloy"
+
+>>>markdown
+## Overview Dashboard
+
+A comprehensive look at taxi trip patterns:
+
+>>>malloy
+run: taxi_trips -> overview
+
+>>>markdown
+## Hourly Patterns
+
+When do New Yorkers take taxi rides? Let's look at trips by hour of day:
+
+>>>malloy
+run: taxi_trips -> by_hour
+
+>>>markdown
+## Daily Patterns
+
+Trip distribution across days of the week:
+
+>>>malloy
+run: taxi_trips -> by_day
+
+>>>markdown
+## Payment Analysis
+
+How do people pay for their rides, and how does tipping vary by payment method?
+
+>>>malloy
+run: taxi_trips -> by_payment
+
+>>>markdown
+## Fare Analysis by Hour
+
+Detailed breakdown of fares throughout the day:
+
+>>>malloy
+run: taxi_trips -> fare_analysis
+
+>>>markdown
+## Long Distance Trips
+
+The longest trips in the dataset:
+
+>>>malloy
+run: taxi_trips -> long_trips

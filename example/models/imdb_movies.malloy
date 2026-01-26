@@ -1,0 +1,140 @@
+-- IMDB Movies Analysis Model
+-- Analyzes movie data from the IMDB dataset on Hugging Face
+-- Uses: hf://datasets/Pablinho/imdb-data/data/*.parquet
+
+source: movies is duckdb.table('hf://datasets/Pablinho/imdb-data/data/train-00000-of-00001.parquet') extend {
+    -- Core measures
+    measure: movie_count is count()
+    measure: avg_rating is avg(score)
+    measure: total_votes is sum(votes)
+    measure: avg_votes is avg(votes)
+    measure: avg_runtime is avg(runtime)
+
+    -- Rating distribution
+    measure: highly_rated is count() { where: score >= 8.0 }
+    measure: low_rated is count() { where: score < 5.0 }
+
+    -- Dimensions
+    dimension: decade is floor(year / 10) * 10
+    dimension: rating_tier is pick
+        'Excellent (8+)' when score >= 8.0
+        'Good (7-8)' when score >= 7.0
+        'Average (5-7)' when score >= 5.0
+        else 'Poor (<5)'
+
+    -- Basic views
+    view: all_movies is {
+        select:
+            title
+            year
+            score
+            votes
+            runtime
+            genre
+        order_by: score desc
+        limit: 100
+    }
+
+    view: by_year is {
+        group_by: year
+        aggregate:
+            movie_count
+            avg_rating
+            total_votes
+        order_by: year
+    }
+
+    view: by_decade is {
+        group_by: decade
+        aggregate:
+            movie_count
+            avg_rating
+            total_votes
+            highly_rated
+        order_by: decade
+    }
+
+    view: by_genre is {
+        group_by: genre
+        aggregate:
+            movie_count
+            avg_rating
+            avg_votes
+        order_by: movie_count desc
+    }
+
+    view: by_rating_tier is {
+        group_by: rating_tier
+        aggregate:
+            movie_count
+            avg_votes
+        order_by: movie_count desc
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            movie_count
+            avg_rating
+            total_votes
+            highly_rated
+            low_rated
+        # bar_chart
+        nest: by_decade
+        # bar_chart
+        nest: by_genre
+        # bar_chart
+        nest: by_rating_tier
+    }
+
+    -- Top rated movies view
+    view: top_rated is {
+        select:
+            title
+            year
+            score
+            votes
+            genre
+            runtime
+        where: votes > 10000
+        order_by: score desc
+        limit: 50
+    }
+
+    -- Most voted movies
+    view: most_popular is {
+        select:
+            title
+            year
+            score
+            votes
+            genre
+        order_by: votes desc
+        limit: 50
+    }
+
+    -- Genre analysis with nested details
+    view: genre_analysis is {
+        group_by: genre
+        aggregate:
+            movie_count
+            avg_rating
+            total_votes
+            highly_rated
+        # line_chart
+        nest: rating_over_time is {
+            group_by: decade
+            aggregate: avg_rating
+            order_by: decade
+        }
+        order_by: movie_count desc
+    }
+}
+
+-- Named queries
+query: movies_overview is movies -> overview
+query: top_movies is movies -> top_rated
+query: popular_movies is movies -> most_popular
+query: movies_by_year is movies -> by_year
+query: movies_by_genre is movies -> genre_analysis
+query: all_movies_list is movies -> all_movies

@@ -1,0 +1,104 @@
+-- GitHub Events Analysis Model
+-- Analyzes GitHub activity data from Hugging Face datasets
+-- Uses: hf://datasets/alvarobartt/github-events/data/*.parquet
+
+source: github_events is duckdb.table('hf://datasets/alvarobartt/github-events/data/train-00000-of-00001.parquet') extend {
+    -- Core measures
+    measure: event_count is count()
+    measure: unique_repos is count(distinct repo.name)
+    measure: unique_actors is count(distinct actor.login)
+
+    -- Event type measures
+    measure: push_events is count() { where: `type` = 'PushEvent' }
+    measure: pr_events is count() { where: `type` = 'PullRequestEvent' }
+    measure: issue_events is count() { where: `type` = 'IssuesEvent' }
+    measure: watch_events is count() { where: `type` = 'WatchEvent' }
+    measure: fork_events is count() { where: `type` = 'ForkEvent' }
+    measure: create_events is count() { where: `type` = 'CreateEvent' }
+
+    -- Dimensions
+    dimension: event_type is `type`
+    dimension: repo_name is repo.name
+    dimension: actor_login is actor.login
+    dimension: event_date is created_at::date
+
+    -- Views
+    view: by_event_type is {
+        group_by: event_type
+        aggregate:
+            event_count
+            unique_repos
+            unique_actors
+        order_by: event_count desc
+    }
+
+    view: by_repo is {
+        group_by: repo_name
+        aggregate:
+            event_count
+            unique_actors
+        order_by: event_count desc
+        limit: 20
+    }
+
+    view: by_actor is {
+        group_by: actor_login
+        aggregate:
+            event_count
+            unique_repos
+        order_by: event_count desc
+        limit: 20
+    }
+
+    view: activity_timeline is {
+        group_by: event_date
+        aggregate:
+            event_count
+            unique_repos
+            unique_actors
+        order_by: event_date
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            event_count
+            unique_repos
+            unique_actors
+            push_events
+            pr_events
+            issue_events
+            watch_events
+            fork_events
+        # bar_chart
+        nest: by_event_type
+        # bar_chart
+        nest: top_repos is by_repo
+        # line_chart
+        nest: activity_timeline
+    }
+
+    -- Top contributors view
+    view: top_contributors is {
+        group_by: actor_login
+        aggregate:
+            event_count
+            push_events
+            pr_events
+            issue_events
+        # bar_chart
+        nest: activity_by_type is {
+            group_by: event_type
+            aggregate: event_count
+        }
+        order_by: event_count desc
+        limit: 15
+    }
+}
+
+-- Named queries
+query: github_overview is github_events -> overview
+query: event_breakdown is github_events -> by_event_type
+query: top_repos is github_events -> by_repo
+query: contributors is github_events -> top_contributors
+query: timeline is github_events -> activity_timeline

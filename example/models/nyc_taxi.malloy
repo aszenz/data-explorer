@@ -1,0 +1,164 @@
+-- NYC Taxi Trips Analysis Model
+-- Analyzes New York City taxi trip data
+-- Uses: hf://datasets/codelion/nyctaxi/yellow_tripdata_2023-01.parquet
+
+source: taxi_trips is duckdb.table('hf://datasets/codelion/nyctaxi/yellow_tripdata_2023-01.parquet') extend {
+    -- Core measures
+    measure: trip_count is count()
+    measure: total_fare is sum(fare_amount)
+    measure: total_tips is sum(tip_amount)
+    measure: total_distance is sum(trip_distance)
+    measure: avg_fare is avg(fare_amount)
+    measure: avg_tip is avg(tip_amount)
+    measure: avg_distance is avg(trip_distance)
+    measure: avg_passengers is avg(passenger_count)
+
+    -- Trip duration (in minutes)
+    dimension: trip_duration_mins is
+        (tpep_dropoff_datetime - tpep_pickup_datetime)::bigint / 60000000
+
+    measure: avg_duration_mins is avg(trip_duration_mins)
+
+    -- Tip percentage
+    dimension: tip_percentage is
+        case when fare_amount > 0 then (tip_amount / fare_amount) * 100 else 0 end
+    measure: avg_tip_percentage is avg(tip_percentage)
+
+    -- Time dimensions
+    dimension: pickup_hour is hour(tpep_pickup_datetime)
+    dimension: pickup_day is dayofweek(tpep_pickup_datetime)
+    dimension: pickup_date is tpep_pickup_datetime::date
+
+    -- Day name
+    dimension: day_name is pick
+        'Sunday' when pickup_day = 0
+        'Monday' when pickup_day = 1
+        'Tuesday' when pickup_day = 2
+        'Wednesday' when pickup_day = 3
+        'Thursday' when pickup_day = 4
+        'Friday' when pickup_day = 5
+        'Saturday' when pickup_day = 6
+        else 'Unknown'
+
+    -- Payment type dimension
+    dimension: payment_type_name is pick
+        'Credit Card' when payment_type = 1
+        'Cash' when payment_type = 2
+        'No Charge' when payment_type = 3
+        'Dispute' when payment_type = 4
+        'Unknown' when payment_type = 5
+        'Voided' when payment_type = 6
+        else 'Other'
+
+    -- Views
+    view: by_hour is {
+        group_by: pickup_hour
+        aggregate:
+            trip_count
+            avg_fare
+            avg_distance
+            avg_tip_percentage
+        order_by: pickup_hour
+    }
+
+    view: by_day is {
+        group_by: day_name
+        aggregate:
+            trip_count
+            total_fare
+            avg_fare
+            avg_tip
+        order_by: trip_count desc
+    }
+
+    view: by_payment is {
+        group_by: payment_type_name
+        aggregate:
+            trip_count
+            total_fare
+            avg_tip
+            avg_tip_percentage
+        order_by: trip_count desc
+    }
+
+    view: by_passenger_count is {
+        group_by: passenger_count
+        aggregate:
+            trip_count
+            avg_fare
+            avg_distance
+        order_by: passenger_count
+    }
+
+    view: daily_trends is {
+        group_by: pickup_date
+        aggregate:
+            trip_count
+            total_fare
+            avg_fare
+            avg_distance
+        order_by: pickup_date
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            trip_count
+            total_fare
+            total_tips
+            total_distance
+            avg_fare
+            avg_tip
+            avg_distance
+            avg_duration_mins
+            avg_tip_percentage
+        # bar_chart
+        nest: by_hour
+        # bar_chart
+        nest: by_day
+        # bar_chart
+        nest: by_payment
+        # line_chart
+        nest: daily_trends
+    }
+
+    -- Fare analysis
+    view: fare_analysis is {
+        group_by: pickup_hour
+        aggregate:
+            trip_count
+            avg_fare
+            avg_tip
+            avg_distance
+        # bar_chart
+        nest: by_payment_method is {
+            group_by: payment_type_name
+            aggregate:
+                trip_count
+                avg_fare
+        }
+        order_by: pickup_hour
+    }
+
+    -- Long trips analysis
+    view: long_trips is {
+        select:
+            tpep_pickup_datetime
+            tpep_dropoff_datetime
+            trip_distance
+            fare_amount
+            tip_amount
+            passenger_count
+        where: trip_distance > 20
+        order_by: trip_distance desc
+        limit: 100
+    }
+}
+
+-- Named queries
+query: taxi_overview is taxi_trips -> overview
+query: hourly_analysis is taxi_trips -> by_hour
+query: payment_analysis is taxi_trips -> by_payment
+query: fare_breakdown is taxi_trips -> fare_analysis
+query: long_distance_trips is taxi_trips -> long_trips
+query: daily_summary is taxi_trips -> daily_trends

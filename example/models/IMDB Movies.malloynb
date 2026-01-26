@@ -1,0 +1,49 @@
+>>>markdown
+# IMDB Movies Analysis
+
+Explore movie ratings, genres, and trends from the IMDB dataset. This data is sourced from Hugging Face and includes movie titles, ratings, vote counts, and more.
+
+**Data Source:** [Pablinho/imdb-data](https://huggingface.co/datasets/Pablinho/imdb-data) on Hugging Face
+
+>>>malloy
+import "imdb_movies.malloy"
+
+>>>markdown
+## Overview Dashboard
+
+A comprehensive look at the movie dataset:
+
+>>>malloy
+run: movies -> overview
+
+>>>markdown
+## Top Rated Movies
+
+The highest-rated movies with significant vote counts (>10,000 votes):
+
+>>>malloy
+run: movies -> top_rated
+
+>>>markdown
+## Most Popular Movies
+
+Movies sorted by number of votes:
+
+>>>malloy
+run: movies -> most_popular
+
+>>>markdown
+## Genre Analysis
+
+Deep dive into movie genres with rating trends over time:
+
+>>>malloy
+run: movies -> genre_analysis
+
+>>>markdown
+## Movies by Decade
+
+How has movie production and quality changed over the decades?
+
+>>>malloy
+run: movies -> by_decade

@@ -1,14 +1,21 @@
 {
   "name": "@aszenz/data-explorer",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "bin": {
+    "data-explorer": "./dist-cli/index.js"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:cli": "tsc -p tsconfig.cli.json",
+    "build:example": "npm run build:cli && node ./dist-cli/index.js build ./example/models -o ./dist",
     "lint": "prettier --check . && tsc --noEmit && eslint .",
     "format": "prettier --write .",
     "test": "playwright test",
+    "test:cli": "vitest run --config vitest.cli.config.ts",
+    "test:models": "tsx scripts/validate-models.ts ./example/models",
     "vitest": "vitest",
     "preview": "vite preview --port 3000",
     "start": "npm run build && npm run preview"
@@ -47,6 +54,7 @@
     "playwright": "^1.57.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
+    "tsx": "^4.19.0",
     "typescript-eslint": "^8.51.0",
     "vite": "^7.3.0",
     "vite-plugin-svgr": "^4.5.0",

@@ -1,0 +1,41 @@
+>>>markdown
+# GitHub Events Analysis
+
+Explore GitHub activity data from the Hugging Face datasets. This model analyzes push events, pull requests, issues, and other GitHub activities.
+
+**Data Source:** [alvarobartt/github-events](https://huggingface.co/datasets/alvarobartt/github-events) on Hugging Face
+
+>>>malloy
+import "github_events.malloy"
+
+>>>markdown
+## Overview Dashboard
+
+Let's start with an overview of all GitHub events in the dataset:
+
+>>>malloy
+run: github_events -> overview
+
+>>>markdown
+## Event Type Distribution
+
+Breaking down events by their type:
+
+>>>malloy
+run: github_events -> by_event_type
+
+>>>markdown
+## Top Repositories
+
+The most active repositories in the dataset:
+
+>>>malloy
+run: github_events -> by_repo
+
+>>>markdown
+## Top Contributors
+
+Who are the most active contributors?
+
+>>>malloy
+run: github_events -> top_contributors

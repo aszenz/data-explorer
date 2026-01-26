@@ -5,6 +5,7 @@ import ModelIcon from "../img/model-icon.svg?react";
 import NotebookIcon from "../img/notebook-icon.svg?react";
 import FaviconLogo from "../img/favicon-logo.svg?react";
 import { humanizeName } from "./utils/humanize";
+import { getSiteConfig } from "./site-config";
 
 export default Home;
 
@@ -16,20 +17,21 @@ type HomeProps = {
 function Home({ models, notebooks }: HomeProps): JSX.Element {
   const modelCount = Object.keys(models).length;
   const notebookCount = Object.keys(notebooks).length;
+  const siteConfig = getSiteConfig();
 
   return (
     <div className="home-container">
       <div className="home-header">
-        <h1 className="home-title">Data Explorer</h1>
+        <h1 className="home-title">{siteConfig.title}</h1>
         <p className="home-subtitle">
-          Explore and analyze your{" "}
+          {siteConfig.description}{" "}
           <a
             href="https://www.malloydata.dev/"
             target="_blank"
             rel="noopener noreferrer"
             className="malloy-link"
           >
-            Malloy models and notebooks
+            Powered by Malloy
           </a>
         </p>
       </div>

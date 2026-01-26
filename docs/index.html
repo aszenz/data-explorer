@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Explorer - Static Site Generator for Malloy</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --bg: #0f172a;
+      --bg-light: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --code-bg: #1e293b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* Header */
+    header {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 6rem 0;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    /* Code Block */
+    .install-code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem 1.5rem;
+      margin: 2rem auto;
+      max-width: 500px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.95rem;
+      color: #a5f3fc;
+    }
+
+    /* Features */
+    .features {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Examples */
+    .examples {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .examples h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .examples > p {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+    }
+
+    .example-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .example-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .example-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+
+    .example-card h3 {
+      color: var(--text);
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .example-card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .example-card .tag {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      margin-top: 0.75rem;
+    }
+
+    /* Usage */
+    .usage {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .usage h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .usage-code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+
+    .usage-code pre {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+
+    .usage-code .comment {
+      color: #6b7280;
+    }
+
+    .usage-code .command {
+      color: #a5f3fc;
+    }
+
+    .usage-code .flag {
+      color: #fbbf24;
+    }
+
+    .usage-code .string {
+      color: #86efac;
+    }
+
+    /* Footer */
+    footer {
+      padding: 3rem 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <a href="#" class="logo">Data Explorer</a>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#examples">Examples</a>
+          <a href="#usage">Usage</a>
+          <a href="https://github.com/aszenz/data-explorer" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Data Explorer</h1>
+        <p>A CLI tool to generate beautiful static websites for your Malloy data models and notebooks. Explore, query, and share your data with ease.</p>
+        <div class="cta-buttons">
+          <a href="#examples" class="btn btn-primary">
+            View Examples
+          </a>
+          <a href="https://github.com/aszenz/data-explorer" class="btn btn-secondary" target="_blank">
+            GitHub
+          </a>
+        </div>
+        <div class="install-code">
+          npx @aszenz/data-explorer build ./models -o ./dist
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="container">
+        <h2>Features</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>Interactive Schema Explorer</h3>
+            <p>Browse your Malloy models with an intuitive schema viewer. See sources, fields, and relationships at a glance.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Query Builder</h3>
+            <p>Build and execute queries visually using the Malloy Explorer integration. No code required.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Notebook Support</h3>
+            <p>Render Malloy notebooks (.malloynb) with executed results, markdown, and syntax-highlighted code.</p>
+          </div>
+          <div class="feature-card">
+            <h3>DuckDB Powered</h3>
+            <p>Runs entirely in the browser using DuckDB WASM. Load CSV, Parquet, JSON, Excel and more.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Hugging Face Datasets</h3>
+            <p>Reference public datasets directly from Hugging Face using the hf:// protocol in DuckDB.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Static & Portable</h3>
+            <p>Generate static HTML/JS that can be hosted anywhere - GitHub Pages, Netlify, S3, or locally.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="examples" id="examples">
+      <div class="container">
+        <h2>Example Sites</h2>
+        <p>See what you can build with Data Explorer</p>
+        <div class="example-grid">
+          <a href="./example/" class="example-card">
+            <h3>E-commerce Analytics</h3>
+            <p>Orders, products, and customer analysis with multi-table joins and visualizations.</p>
+            <span class="tag">Local CSV</span>
+          </a>
+          <a href="./example/" class="example-card">
+            <h3>GitHub Activity</h3>
+            <p>Analyze GitHub events data from Hugging Face's public dataset mirror.</p>
+            <span class="tag">Hugging Face</span>
+          </a>
+          <a href="./example/" class="example-card">
+            <h3>NYC Taxi Trips</h3>
+            <p>Explore millions of taxi rides with geographic and temporal analysis.</p>
+            <span class="tag">Hugging Face</span>
+          </a>
+          <a href="./example/" class="example-card">
+            <h3>IMDB Movies</h3>
+            <p>Movie ratings, genres, and cast analysis from the IMDB dataset.</p>
+            <span class="tag">Hugging Face</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="usage" id="usage">
+      <div class="container">
+        <h2>Quick Start</h2>
+        <div class="usage-code">
+          <pre><span class="comment"># Build a site from your Malloy models</span>
+<span class="command">npx @aszenz/data-explorer build</span> <span class="string">./models</span> <span class="flag">-o</span> <span class="string">./dist</span>
+
+<span class="comment"># Customize the site title and description</span>
+<span class="command">npx @aszenz/data-explorer build</span> <span class="string">./models</span> \
+  <span class="flag">--title</span> <span class="string">"Sales Analytics"</span> \
+  <span class="flag">--description</span> <span class="string">"Explore our sales data"</span> \
+  <span class="flag">--output</span> <span class="string">./dist</span>
+
+<span class="comment"># Set base path for GitHub Pages deployment</span>
+<span class="command">npx @aszenz/data-explorer build</span> <span class="string">./models</span> \
+  <span class="flag">--base-path</span> <span class="string">"/my-repo/"</span> \
+  <span class="flag">-o</span> <span class="string">./dist</span>
+
+<span class="comment"># View all options</span>
+<span class="command">npx @aszenz/data-explorer</span> <span class="flag">--help</span></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Built with <a href="https://www.malloydata.dev/" target="_blank">Malloy</a> and <a href="https://duckdb.org/" target="_blank">DuckDB</a></p>
+      <p style="margin-top: 0.5rem;">Open source on <a href="https://github.com/aszenz/data-explorer" target="_blank">GitHub</a></p>
+    </div>
+  </footer>
+</body>
+</html>

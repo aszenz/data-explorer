@@ -1,6 +1,10 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { StrictMode } from "react";
+import { getSiteConfig } from "./site-config";
+
+// Set document title from config
+document.title = getSiteConfig().title;
 
 const rootElement = document.getElementById("root");
 if (null === rootElement) {
