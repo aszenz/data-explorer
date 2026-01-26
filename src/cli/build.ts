@@ -1,4 +1,10 @@
-import { build as viteBuild, createLogger, type InlineConfig } from "vite";
+import {
+  build as viteBuild,
+  preview as vitePreview,
+  createLogger,
+  type InlineConfig,
+  type PreviewServer,
+} from "vite";
 import { writeFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { DataExplorerConfig } from "./types.js";
@@ -10,26 +16,11 @@ export async function build(
   config: DataExplorerConfig,
   packageRoot: string
 ): Promise<void> {
-  // Write config to a temporary JSON file that vite.config.ts will read
   const configPath = join(packageRoot, ".data-explorer-config.json");
 
-  writeFileSync(
-    configPath,
-    JSON.stringify(
-      {
-        inputPath: config.inputPath,
-        outputPath: config.outputPath,
-        title: config.title,
-        description: config.description,
-        basePath: config.basePath,
-      },
-      null,
-      2
-    )
-  );
+  writeFileSync(configPath, JSON.stringify(config, null, 2));
 
   try {
-    // Set environment variable for vite.config.ts to find the config
     process.env["DATA_EXPLORER_CONFIG_PATH"] = configPath;
 
     const viteConfig: InlineConfig = {
@@ -49,10 +40,35 @@ export async function build(
     console.log("Build completed successfully!");
     console.log(`Output: ${config.outputPath}`);
   } finally {
-    // Clean up config file and env variable
     if (existsSync(configPath)) {
       rmSync(configPath);
     }
     delete process.env["DATA_EXPLORER_CONFIG_PATH"];
   }
+}
+
+/**
+ * Preview the built site using Vite's preview server
+ */
+export async function preview(
+  outputPath: string,
+  port: number = 3000
+): Promise<PreviewServer> {
+  const viteConfig: InlineConfig = {
+    preview: {
+      port,
+      open: true,
+    },
+    build: {
+      outDir: outputPath,
+    },
+  };
+
+  const server = await vitePreview(viteConfig);
+
+  console.log("");
+  console.log(`Preview server running at:`);
+  server.printUrls();
+
+  return server;
 }

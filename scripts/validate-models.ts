@@ -1,21 +1,24 @@
 #!/usr/bin/env npx tsx
 
 /**
- * Validates that all Malloy models in a directory have valid syntax.
+ * Validates that all Malloy models in examples directories have valid syntax.
  * This performs a basic syntax check - it cannot fully validate models
  * without a real database connection to fetch table schemas.
  *
- * Usage: npx tsx scripts/validate-models.ts [models-directory]
+ * Usage: npx tsx scripts/validate-models.ts [optional-specific-directory]
  */
 
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, resolve, extname } from "node:path";
+import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
+import { join, resolve, extname, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const modelsDir = process.argv[2] ?? "./example/models";
-const resolvedDir = resolve(modelsDir);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = resolve(__dirname, "..");
 
 interface ValidationResult {
   file: string;
+  dir: string;
   success: boolean;
   fileSize: number;
   hasSource: boolean;
@@ -39,63 +42,63 @@ const SYNTAX_ERROR_PATTERNS = [
   { pattern: /query:\s*$/m, message: "Incomplete query definition" },
 ];
 
-function validateMalloyFile(filePath: string): ValidationResult {
+function validateMalloyFile(filePath: string, dirName: string): ValidationResult {
   const fileName = filePath.split("/").pop() ?? filePath;
 
   try {
     const content = readFileSync(filePath, "utf-8");
     const stats = statSync(filePath);
 
-    // Check for basic Malloy constructs
     const hasSource = MALLOY_PATTERNS.source.test(content);
     const hasQuery = MALLOY_PATTERNS.query.test(content);
     const hasView = MALLOY_PATTERNS.view.test(content);
     const hasImport = MALLOY_PATTERNS.import.test(content);
 
-    // A valid Malloy file should have at least one of these
     const hasValidContent = hasSource || hasQuery || hasView || hasImport;
 
     if (!hasValidContent && content.trim().length > 0) {
       return {
         file: fileName,
+        dir: dirName,
         success: false,
         fileSize: stats.size,
         hasSource,
         hasQuery,
-        error: "No valid Malloy constructs found (source, query, view, or import)",
+        error: "No valid Malloy constructs found",
       };
     }
 
-    // Check for common syntax errors
     for (const { pattern, message } of SYNTAX_ERROR_PATTERNS) {
       if (pattern.test(content)) {
         return {
           file: fileName,
+          dir: dirName,
           success: false,
           fileSize: stats.size,
           hasSource,
           hasQuery,
-          error: `Potential syntax error: ${message}`,
+          error: `Syntax error: ${message}`,
         };
       }
     }
 
-    // Check for balanced braces
     const openBraces = (content.match(/\{/g) || []).length;
     const closeBraces = (content.match(/\}/g) || []).length;
     if (openBraces !== closeBraces) {
       return {
         file: fileName,
+        dir: dirName,
         success: false,
         fileSize: stats.size,
         hasSource,
         hasQuery,
-        error: `Unbalanced braces: ${openBraces} opening, ${closeBraces} closing`,
+        error: `Unbalanced braces: ${openBraces} open, ${closeBraces} close`,
       };
     }
 
     return {
       file: fileName,
+      dir: dirName,
       success: true,
       fileSize: stats.size,
       hasSource,
@@ -104,107 +107,137 @@ function validateMalloyFile(filePath: string): ValidationResult {
   } catch (e) {
     return {
       file: fileName,
+      dir: dirName,
       success: false,
       fileSize: 0,
       hasSource: false,
       hasQuery: false,
-      error: `Failed to read file: ${e instanceof Error ? e.message : String(e)}`,
+      error: `Read error: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
 }
 
-async function validateModels(): Promise<void> {
-  console.log(`Validating Malloy models in: ${resolvedDir}\n`);
+function validateNotebook(filePath: string, dirName: string): ValidationResult {
+  const fileName = filePath.split("/").pop() ?? filePath;
 
-  const files = readdirSync(resolvedDir);
+  try {
+    const content = readFileSync(filePath, "utf-8");
+    const stats = statSync(filePath);
+
+    const hasMalloyCell = content.includes(">>>malloy");
+    const hasMarkdownCell = content.includes(">>>markdown");
+
+    if (hasMalloyCell || hasMarkdownCell) {
+      return {
+        file: fileName,
+        dir: dirName,
+        success: true,
+        fileSize: stats.size,
+        hasSource: false,
+        hasQuery: hasMalloyCell,
+      };
+    } else {
+      return {
+        file: fileName,
+        dir: dirName,
+        success: false,
+        fileSize: stats.size,
+        hasSource: false,
+        hasQuery: false,
+        error: "No notebook cells found",
+      };
+    }
+  } catch (e) {
+    return {
+      file: fileName,
+      dir: dirName,
+      success: false,
+      fileSize: 0,
+      hasSource: false,
+      hasQuery: false,
+      error: `Read error: ${e}`,
+    };
+  }
+}
+
+function validateDirectory(dirPath: string): ValidationResult[] {
+  const results: ValidationResult[] = [];
+  const dirName = dirPath.split("/").pop() ?? dirPath;
+
+  if (!existsSync(dirPath)) {
+    return results;
+  }
+
+  const files = readdirSync(dirPath);
   const malloyFiles = files.filter((f) => extname(f) === ".malloy");
   const notebookFiles = files.filter((f) => extname(f) === ".malloynb");
 
-  if (malloyFiles.length === 0 && notebookFiles.length === 0) {
-    console.log("No .malloy or .malloynb files found.");
-    process.exit(0);
-  }
-
-  console.log(`Found ${malloyFiles.length} .malloy files and ${notebookFiles.length} .malloynb files\n`);
-
-  const results: ValidationResult[] = [];
-  let hasErrors = false;
-
-  // Validate .malloy files
   for (const file of malloyFiles) {
-    const filePath = join(resolvedDir, file);
-    const result = validateMalloyFile(filePath);
-    results.push(result);
-
-    if (result.success) {
-      const features = [];
-      if (result.hasSource) features.push("source");
-      if (result.hasQuery) features.push("query");
-      console.log(`  ✓ ${file} (${features.join(", ") || "import only"})`);
-    } else {
-      hasErrors = true;
-      console.log(`  ✗ ${file}`);
-      console.log(`    Error: ${result.error}`);
-    }
+    results.push(validateMalloyFile(join(dirPath, file), dirName));
   }
 
-  // Basic check for .malloynb files (just verify they exist and have content)
   for (const file of notebookFiles) {
-    const filePath = join(resolvedDir, file);
-    try {
-      const content = readFileSync(filePath, "utf-8");
-      const stats = statSync(filePath);
+    results.push(validateNotebook(join(dirPath, file), dirName));
+  }
 
-      // Check for notebook markers
-      const hasMalloyCell = content.includes(">>>malloy");
-      const hasMarkdownCell = content.includes(">>>markdown");
+  return results;
+}
 
-      if (hasMalloyCell || hasMarkdownCell) {
-        console.log(`  ✓ ${file} (notebook)`);
-        results.push({
-          file,
-          success: true,
-          fileSize: stats.size,
-          hasSource: false,
-          hasQuery: hasMalloyCell,
-        });
-      } else {
-        console.log(`  ✗ ${file}`);
-        console.log(`    Error: No >>>malloy or >>>markdown cells found`);
-        hasErrors = true;
-        results.push({
-          file,
-          success: false,
-          fileSize: stats.size,
-          hasSource: false,
-          hasQuery: false,
-          error: "No notebook cells found",
-        });
+async function main(): Promise<void> {
+  const specificDir = process.argv[2];
+
+  let directories: string[];
+
+  if (specificDir) {
+    directories = [resolve(specificDir)];
+  } else {
+    // Scan all examples directories
+    const examplesDir = join(PROJECT_ROOT, "examples");
+    if (!existsSync(examplesDir)) {
+      console.error("No examples directory found");
+      process.exit(1);
+    }
+    directories = readdirSync(examplesDir)
+      .map((d) => join(examplesDir, d))
+      .filter((d) => statSync(d).isDirectory());
+  }
+
+  console.log("Validating Malloy models...\n");
+
+  const allResults: ValidationResult[] = [];
+
+  for (const dir of directories) {
+    const dirName = dir.split("/").pop() ?? dir;
+    const results = validateDirectory(dir);
+
+    if (results.length > 0) {
+      console.log(`[${dirName}]`);
+      for (const result of results) {
+        if (result.success) {
+          const type = result.file.endsWith(".malloynb") ? "notebook" : "";
+          const features = [];
+          if (result.hasSource) features.push("source");
+          if (result.hasQuery) features.push("query");
+          const info = type || features.join(", ") || "import";
+          console.log(`  ✓ ${result.file} (${info})`);
+        } else {
+          console.log(`  ✗ ${result.file}`);
+          console.log(`    ${result.error}`);
+        }
       }
-    } catch (e) {
-      hasErrors = true;
-      console.log(`  ✗ ${file}`);
-      console.log(`    Error: Failed to read file`);
-      results.push({
-        file,
-        success: false,
-        fileSize: 0,
-        hasSource: false,
-        hasQuery: false,
-        error: `Failed to read: ${e}`,
-      });
+      console.log("");
+      allResults.push(...results);
     }
   }
 
-  console.log("");
   console.log("─".repeat(50));
 
-  const passed = results.filter((r) => r.success).length;
-  const failed = results.filter((r) => !r.success).length;
+  const passed = allResults.filter((r) => r.success).length;
+  const failed = allResults.filter((r) => !r.success).length;
 
   console.log(`Results: ${passed} passed, ${failed} failed`);
 
-  if (hasErrors) {
+  if (failed > 0) {
     console.log("\nValidation completed with errors!");
     process.exit(1);
   } else {
@@ -213,7 +246,7 @@ async function validateModels(): Promise<void> {
   }
 }
 
-validateModels().catch((e) => {
+main().catch((e) => {
   console.error("Validation script error:", e);
   process.exit(1);
 });

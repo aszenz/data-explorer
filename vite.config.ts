@@ -28,14 +28,15 @@ function loadConfig(): DataExplorerConfig | null {
 
 const cliConfig = loadConfig();
 
-// Default values for development (uses example/models)
+// Default values for development (uses examples/sample-data)
 const siteConfig = {
   title: cliConfig?.title ?? "Data Explorer",
   description:
     cliConfig?.description ??
     "Explore and analyze your Malloy models and notebooks",
   basePath: cliConfig?.basePath ?? process.env["BASE_PUBLIC_PATH"] ?? "/",
-  modelsPath: cliConfig?.inputPath ?? resolve(process.cwd(), "example/models"),
+  modelsPath:
+    cliConfig?.inputPath ?? resolve(process.cwd(), "examples/sample-data"),
 };
 
 // https://vite.dev/config/
