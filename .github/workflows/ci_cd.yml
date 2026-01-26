@@ -50,7 +50,13 @@ jobs:
             npx playwright install
           fi
 
-      - name: Run tests on CI
+      - name: Run CLI smoke tests
+        run: npm run test:cli
+
+      - name: Validate Malloy models
+        run: npm run test:models
+
+      - name: Run E2E tests
         run: npm test
 
       - uses: actions/upload-artifact@v6
@@ -72,11 +78,13 @@ jobs:
           node-version: lts/*
       - name: Install dependencies
         run: npm ci
-      - name: Build website
-        run: npm run build
-        # For gh pages deployment, base path is repository name
+      - name: Build CLI
+        run: npm run build:cli
+
+      - name: Build all example sites with landing page
+        run: npm run build:all
         env:
-          BASE_PUBLIC_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: /${{ github.event.repository.name }}/
 
       - name: Upload Build Artifact
         # only run on pushes to master or workflow_dispatch
@@ -123,9 +131,10 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run tests on deployed site
+        # Tests expect the sample-data example which contains the invoices model
         run: npm test
         env:
-          URL: ${{ needs.deploy.outputs.page_url }}
+          URL: ${{ needs.deploy.outputs.page_url }}sample-data/
       - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
