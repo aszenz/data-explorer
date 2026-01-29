@@ -87,7 +87,7 @@ function NotebookCellRenderer({
         >
           &times;
         </button>
-        <RenderedResult result={cell.result} />
+        <RenderedResult result={cell.result} height="100%" />
       </div>
       <details className="cell-code">
         <summary>Code</summary>

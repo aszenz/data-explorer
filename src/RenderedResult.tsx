@@ -7,7 +7,9 @@ export default RenderedResult;
 
 function RenderedResult({
   result,
+  height = "400px",
 }: {
+  height?: string;
   result: malloyInterfaces.Result;
 }): JSX.Element {
   const vizContainer = useRef<HTMLDivElement>(null);
@@ -26,5 +28,5 @@ function RenderedResult({
     }
   }, [viz, result]);
 
-  return <div style={{ height: "400px" }} ref={vizContainer} />;
+  return <div style={{ height }} ref={vizContainer} />;
 }
