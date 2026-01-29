@@ -79,7 +79,7 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
       {isExplorerPage && queryParam && (
         <>
           <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-item query">
+          <span className="breadcrumb-item query" title={queryParam}>
             <MalloyCodeBlock code={queryParam} showCopy={false} />
           </span>
         </>
