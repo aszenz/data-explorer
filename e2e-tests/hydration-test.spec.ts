@@ -260,7 +260,8 @@ test.describe("Hydration Feasibility Tests", () => {
       );
       if (!container) return { scrolled: false, newRowCount: 0 };
 
-      const beforeRows = document.querySelectorAll("table tbody tr").length;
+      const _beforeRows = document.querySelectorAll("table tbody tr").length;
+      void _beforeRows; // Used for debugging
       container.scrollTop = 500;
 
       // Wait a tick for virtual scroll to update
