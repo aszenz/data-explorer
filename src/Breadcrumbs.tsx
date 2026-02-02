@@ -9,6 +9,7 @@ import { useRuntime } from "./contexts";
 import MalloyCodeBlock from "./MalloyCodeBlock";
 import { type JSX } from "react/jsx-runtime";
 import ArrowLeftIcon from "../img/arrow-left.svg?react";
+import FaviconLogo from "../img/favicon-logo.svg?react";
 import Menu from "./Menu";
 
 export default Breadcrumbs;
@@ -42,6 +43,9 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
 
   return (
     <nav className="breadcrumbs">
+      <Link to="/" className="breadcrumb-logo" title="Home">
+        <FaviconLogo aria-label="Home" />
+      </Link>
       <button
         type="button"
         className="back-button"
@@ -52,28 +56,34 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
       >
         <ArrowLeftIcon aria-label="Go back" />
       </button>
-      <Link to="/" className="breadcrumb-item">
-        Home
-      </Link>
 
       {isModelPage && modelName && (
-        <>
-          <span className="breadcrumb-separator">/</span>
-          <BreadcrumbDropdown
-            label={modelName}
-            linkTo={`/model/${modelName}`}
-            items={Object.keys(models).map((name) => ({
-              name,
-              to: `/model/${encodeURIComponent(name)}`,
-              active: name === modelName,
-            }))}
-            isCurrent={!isExplorerPage && !isPreviewPage && !isQueryPage}
-          />
-        </>
+        <BreadcrumbDropdown
+          label={modelName}
+          linkTo={`/model/${modelName}`}
+          items={Object.keys(models).map((name) => ({
+            name,
+            to: `/model/${encodeURIComponent(name)}`,
+            active: name === modelName,
+          }))}
+          isCurrent={!isExplorerPage && !isPreviewPage && !isQueryPage}
+        />
       )}
 
       {isExplorerPage && sourceName && modelName && (
-        <SourceBreadcrumb modelName={modelName} sourceName={sourceName} />
+        <SourceBreadcrumb
+          modelName={modelName}
+          sourceName={sourceName}
+          pageType="explorer"
+        />
+      )}
+
+      {isExplorerPage && modelName && sourceName && (
+        <ViewTypeBreadcrumb
+          modelName={modelName}
+          sourceName={sourceName}
+          currentView="explorer"
+        />
       )}
 
       {isExplorerPage && queryParam && (
@@ -85,11 +95,20 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
         </>
       )}
 
-      {isPreviewPage && sourceName && (
-        <>
-          <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-item current">{sourceName}</span>
-        </>
+      {isPreviewPage && sourceName && modelName && (
+        <SourceBreadcrumb
+          modelName={modelName}
+          sourceName={sourceName}
+          pageType="preview"
+        />
+      )}
+
+      {isPreviewPage && sourceName && modelName && (
+        <ViewTypeBreadcrumb
+          modelName={modelName}
+          sourceName={sourceName}
+          currentView="preview"
+        />
       )}
 
       {isQueryPage && queryName && modelName && (
@@ -97,18 +116,15 @@ function Breadcrumbs({ models, notebooks }: BreadcrumbsProps): JSX.Element {
       )}
 
       {isNotebookPage && notebookName && (
-        <>
-          <span className="breadcrumb-separator">/</span>
-          <BreadcrumbDropdown
-            label={notebookName}
-            items={Object.keys(notebooks).map((name) => ({
-              name,
-              to: `/notebook/${encodeURIComponent(name)}`,
-              active: name === notebookName,
-            }))}
-            isCurrent
-          />
-        </>
+        <BreadcrumbDropdown
+          label={notebookName}
+          items={Object.keys(notebooks).map((name) => ({
+            name,
+            to: `/notebook/${encodeURIComponent(name)}`,
+            active: name === notebookName,
+          }))}
+          isCurrent
+        />
       )}
     </nav>
   );
@@ -155,9 +171,11 @@ function BreadcrumbDropdown({
 function SourceBreadcrumb({
   modelName,
   sourceName,
+  pageType,
 }: {
   modelName: string;
   sourceName: string;
+  pageType: "explorer" | "preview";
 }): JSX.Element {
   const { model } = useRuntime();
   const sources = model.exportedExplores;
@@ -169,9 +187,41 @@ function SourceBreadcrumb({
         label={sourceName}
         items={sources.map((explore) => ({
           name: explore.name,
-          to: `/model/${modelName}/explorer/${explore.name}`,
+          to: `/model/${modelName}/${pageType}/${explore.name}`,
           active: explore.name === sourceName,
         }))}
+        isCurrent={pageType === "explorer"}
+      />
+    </>
+  );
+}
+
+function ViewTypeBreadcrumb({
+  modelName,
+  sourceName,
+  currentView,
+}: {
+  modelName: string;
+  sourceName: string;
+  currentView: "preview" | "explorer";
+}): JSX.Element {
+  return (
+    <>
+      <span className="breadcrumb-separator">/</span>
+      <BreadcrumbDropdown
+        label={currentView === "preview" ? "Preview" : "Explore"}
+        items={[
+          {
+            name: "Preview",
+            to: `/model/${modelName}/preview/${sourceName}`,
+            active: currentView === "preview",
+          },
+          {
+            name: "Explore",
+            to: `/model/${modelName}/explorer/${sourceName}?showQueryPanel=true&showSourcePanel=true`,
+            active: currentView === "explorer",
+          },
+        ]}
         isCurrent
       />
     </>
@@ -192,9 +242,9 @@ function QueryBreadcrumb({
     <>
       <span className="breadcrumb-separator">/</span>
       <BreadcrumbDropdown
-        label={queryName}
+        label={`Query ${queryName}`}
         items={queries.map((query) => ({
-          name: query.name,
+          name: `Query ${query.name}`,
           to: `/model/${modelName}/query/${query.name}`,
           active: query.name === queryName,
         }))}

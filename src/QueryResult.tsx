@@ -15,7 +15,7 @@ function QueryResult(): JSX.Element {
         <p className="result-subtitle">Named Query</p>
       </div>
       <div className="result-content">
-        <RenderedResult result={result} />
+        <RenderedResult result={result} height="100%" />
       </div>
     </div>
   );
