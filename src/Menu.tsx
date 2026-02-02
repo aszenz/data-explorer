@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { useId, type JSX, type ReactNode } from "react";
+import ChevronDownIcon from "../img/chevron_down.svg?react";
 
 export default Menu;
 
@@ -35,6 +36,7 @@ function Menu({
         popoverTarget={popoverId}
       >
         {trigger}
+        <ChevronDownIcon className="menu-chevron" aria-hidden="true" />
       </button>
       <ul
         id={popoverId}

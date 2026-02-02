@@ -59,7 +59,7 @@ function NotebookCellRenderer({
     <div className="notebook-cell" data-cell-index={cellIndex}>
       <div className="cell-content-wrapper">
         <div className="malloy-result-display">
-          <RenderedResult result={cell.result} />
+          <RenderedResult result={cell.result} height="400px" />
         </div>
         <button
           type="button"

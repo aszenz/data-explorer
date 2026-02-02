@@ -7,10 +7,10 @@ export default RenderedResult;
 
 function RenderedResult({
   result,
-  height = "400px",
+  height,
 }: {
-  height?: string;
   result: malloyInterfaces.Result;
+  height: string;
 }): JSX.Element {
   const vizContainer = useRef<HTMLDivElement>(null);
   const viz = useMemo(() => {

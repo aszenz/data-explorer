@@ -15,7 +15,7 @@ function PreviewResult(): JSX.Element {
         <p className="result-subtitle">Preview</p>
       </div>
       <div className="result-content">
-        <RenderedResult result={result} />
+        <RenderedResult result={result} height="100%" />
       </div>
     </div>
   );

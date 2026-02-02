@@ -32,9 +32,10 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
             Malloy models and notebooks
           </a>
         </p>
+        <FaviconLogo className="home-logo" />
       </div>
 
-      <div className="home-content-with-logo">
+      <div className="home-content">
         <div className="home-section">
           <div className="section-header">
             <h2>Data Models</h2>
@@ -59,15 +60,12 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
                   to={`/model/${encodeURIComponent(modelName)}`}
                   icon={<ModelIcon aria-label="Data model" />}
                   title={humanizeName(modelName)}
-                  description="Semantic data model"
                   className="model-card"
                 />
               ))}
             </div>
           )}
         </div>
-
-        <FaviconLogo className="home-logo-center" />
 
         <div className="home-section">
           <div className="section-header">
@@ -93,7 +91,6 @@ function Home({ models, notebooks }: HomeProps): JSX.Element {
                   to={`/notebook/${encodeURIComponent(notebookName)}`}
                   icon={<NotebookIcon aria-label="Notebook" />}
                   title={humanizeName(notebookName)}
-                  description="Visual data story"
                   className="notebook-card"
                 />
               ))}

@@ -60,7 +60,9 @@ function ModelHome(): JSX.Element {
           }}
           onExploreClick={(explore) => {
             const source = explore.name;
-            return navigate(`explorer/${source}`);
+            return navigate(
+              `explorer/${source}?showQueryPanel=true&showSourcePanel=true`,
+            );
           }}
         />
       </div>
