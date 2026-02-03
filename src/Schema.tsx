@@ -99,13 +99,12 @@ function SchemaRenderer({
     return "sources";
   };
 
+  const validTabs = ["sources", "queries", "code", "data"] as const;
+  const tabParam = searchParams.get("tab");
   const activeTab =
-    (searchParams.get("tab") as
-      | "sources"
-      | "queries"
-      | "code"
-      | "data"
-      | null) ?? getDefaultTab();
+    tabParam && validTabs.includes(tabParam as (typeof validTabs)[number])
+      ? (tabParam as "sources" | "queries" | "code" | "data")
+      : getDefaultTab();
 
   const createTabUrl = (tab: string) => {
     const params = new URLSearchParams(searchParams);
@@ -297,11 +296,12 @@ function StructItem({
   const [searchParams, setSearchParams] = useSearchParams();
   const exploreKey = path ? `${path}.${explore.name}` : explore.name;
   const expandedExplores = searchParams.get("expanded")?.split(",") || [];
-  const isExpanded = expandedExplores.includes(exploreKey);
-  const hidden = startHidden ? !isExpanded : false;
+  const isToggled = expandedExplores.includes(exploreKey);
+  // XOR: hidden if (startHidden and not toggled) or (not startHidden and toggled)
+  const hidden = startHidden ? !isToggled : isToggled;
 
   const toggleHidden = () => {
-    const newExpandedExplores = isExpanded
+    const newExpandedExplores = isToggled
       ? expandedExplores.filter((key) => key !== exploreKey)
       : [...expandedExplores, exploreKey];
 

@@ -15,9 +15,7 @@ test("Model page loads", async ({ page }) => {
     page.getByRole("heading", { name: "Malloy model invoices" }),
   ).toBeVisible({ timeout: 15 * 1000 });
   // Verify data sources section is visible
-  await expect(
-    page.getByRole("button", { name: /Data Sources/ }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /Data Sources/ })).toBeVisible();
 });
 
 test("Preview page loads", async ({ page }) => {
@@ -28,7 +26,7 @@ test("Preview page loads", async ({ page }) => {
   });
   // Verify preview page loaded with heading and table data
   await expect(page.getByRole("heading", { name: "invoices" })).toBeVisible();
-  await expect(page.getByText("Preview")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Preview" })).toBeVisible();
   // Verify table has data
   await expect(page.getByText("invoice_id")).toBeVisible();
 });
