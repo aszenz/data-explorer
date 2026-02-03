@@ -1,9 +1,9 @@
 import { type JSX } from "react/jsx-runtime";
-import { useCallback } from "react";
 import { Link } from "react-router";
 import NotebookCellRenderer from "./NotebookCellRenderer";
 import type { NotebookOutput } from "./notebook-types";
 import DownloadIcon from "../img/download.svg?react";
+import { getNotebookDownloadUrl } from "./download-utils";
 
 export default NotebookViewer;
 export type { NotebookViewerProps };
@@ -24,19 +24,6 @@ function NotebookViewer({
   ).length;
   const resultCount = notebook.cells.filter((c) => c.type === "malloy").length;
 
-  const handleDownload = useCallback(() => {
-    if (!notebook.rawContent || !name) return;
-    const blob = new Blob([notebook.rawContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${name}.malloynb`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [notebook.rawContent, name]);
-
   return (
     <div className="notebook-container">
       <div className="notebook-header">
@@ -44,15 +31,16 @@ function NotebookViewer({
           <h2>{name ?? "Notebook"}</h2>
           <span className="count-badge">{contentCount} content</span>
           <span className="count-badge">{resultCount} results</span>
-          {notebook.rawContent && (
-            <button
+          {notebook.rawContent && name && (
+            <a
+              href={getNotebookDownloadUrl(name)}
+              download={`${name}.malloynb`}
               className="action-button download-button"
-              onClick={handleDownload}
               title="Download notebook"
             >
               <DownloadIcon aria-label="Download" />
               Download
-            </button>
+            </a>
           )}
         </div>
         {notebook.sources.length > 0 && (

@@ -13,6 +13,7 @@ import {
 } from "@malloydata/malloy";
 import MalloyCodeBlock from "./MalloyCodeBlock";
 import type { DataSourceInfo } from "./types";
+import { useSearchParams, Link } from "react-router";
 
 import {
   exploreSubtype,
@@ -26,6 +27,7 @@ import ArrayIcon from "../img/data-type-array.svg?react";
 import BooleanIcon from "../img/boolean.svg?react";
 import ChevronRightIcon from "../img/chevron_right.svg?react";
 import ChevronDownIcon from "../img/chevron_down.svg?react";
+import DownloadIcon from "../img/download.svg?react";
 import ManyToOneIcon from "../img/many_to_one.svg?react";
 import NumberIcon from "../img/number.svg?react";
 import NumberAggregateIcon from "../img/number-aggregate.svg?react";
@@ -39,12 +41,12 @@ import TimeIcon from "../img/time.svg?react";
 import UnknownIcon from "../img/unknown.svg?react";
 import LightningIcon from "../img/lightning.svg?react";
 import CodeIcon from "../img/code.svg?react";
-import DownloadIcon from "../img/download.svg?react";
 import FileIcon from "../img/file.svg?react";
 import EyeIcon from "../img/eye.svg?react";
 import CompassIcon from "../img/compass.svg?react";
 import DatabaseIcon from "../img/database-icon.svg?react";
 import { type JSX } from "react/jsx-runtime";
+import { getDataDownloadUrl } from "./download-utils";
 
 export { SchemaRenderer };
 export type { SchemaRendererProps };
@@ -77,6 +79,7 @@ function SchemaRenderer({
   const hidden = !defaultShow;
   const hasQueries = queries.length > 0;
   const hasExplores = explores.length > 0;
+  const [searchParams] = useSearchParams();
 
   // Filter dataSources to only show files referenced in the model
   const referencedDataSources = React.useMemo(() => {
@@ -95,63 +98,61 @@ function SchemaRenderer({
     return "sources";
   };
 
-  const [activeTab, setActiveTab] = React.useState<
-    "sources" | "queries" | "code" | "data"
-  >(getDefaultTab());
+  const activeTab =
+    (searchParams.get("tab") as
+      | "sources"
+      | "queries"
+      | "code"
+      | "data"
+      | null) ?? getDefaultTab();
+
+  const createTabUrl = (tab: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", tab);
+    return `?${params.toString()}`;
+  };
 
   return (
     <div className="schema">
       <div className="schema-tabs">
         {hasExplores && (
-          <button
-            type="button"
+          <Link
+            to={createTabUrl("sources")}
             className={`schema-tab ${activeTab === "sources" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("sources");
-            }}
           >
             <DatabaseIcon aria-label="Data Sources" />
             Data Sources
             <span className="count-badge">{explores.length}</span>
-          </button>
+          </Link>
         )}
         {hasQueries && (
-          <button
-            type="button"
+          <Link
+            to={createTabUrl("queries")}
             className={`schema-tab ${activeTab === "queries" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("queries");
-            }}
           >
             <LightningIcon aria-label="Named Queries" />
             Named Queries
             <span className="count-badge">{queries.length}</span>
-          </button>
+          </Link>
         )}
         {modelCode && (
-          <button
-            type="button"
+          <Link
+            to={createTabUrl("code")}
             className={`schema-tab ${activeTab === "code" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("code");
-            }}
           >
             <CodeIcon aria-label="Code" />
             Malloy Definition
-          </button>
+          </Link>
         )}
         {hasDataSources && (
-          <button
-            type="button"
+          <Link
+            to={createTabUrl("data")}
             className={`schema-tab ${activeTab === "data" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("data");
-            }}
           >
             <DownloadIcon aria-label="Raw Data" />
             Raw Data
             <span className="count-badge">{referencedDataSources.length}</span>
-          </button>
+          </Link>
         )}
       </div>
       <div className="schema-tab-content">
@@ -190,25 +191,28 @@ function SchemaRenderer({
         )}
         {activeTab === "data" && hasDataSources && (
           <div className="raw-data-list">
-            {referencedDataSources.map((source) => (
-              <a
-                key={source.path}
-                href={source.url}
-                download={`${source.name}.${source.fileType}`}
-                className="raw-data-item"
-                title={`Download ${source.name}.${source.fileType}`}
-              >
-                <FileIcon className="raw-data-icon" aria-label="File" />
-                <span className="raw-data-name">{source.name}</span>
-                <span className="raw-data-type">
-                  {source.fileType.toUpperCase()}
-                </span>
-                <DownloadIcon
-                  className="raw-data-download-icon"
-                  aria-label="Download"
-                />
-              </a>
-            ))}
+            {referencedDataSources.map((source) => {
+              const filename = `${source.name}.${source.fileType}`;
+              return (
+                <a
+                  key={source.path}
+                  href={getDataDownloadUrl(filename)}
+                  download={filename}
+                  className="raw-data-item"
+                  title={`Download ${filename}`}
+                >
+                  <FileIcon className="raw-data-icon" aria-label="File" />
+                  <span className="raw-data-name">{source.name}</span>
+                  <span className="raw-data-type">
+                    {source.fileType.toUpperCase()}
+                  </span>
+                  <DownloadIcon
+                    className="raw-data-download-icon"
+                    aria-label="Download"
+                  />
+                </a>
+              );
+            })}
           </div>
         )}
       </div>
@@ -278,10 +282,24 @@ function StructItem({
   onExploreClick,
   startHidden,
 }: StructItemProps) {
-  const [hidden, setHidden] = React.useState(startHidden);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const exploreKey = path ? `${path}.${explore.name}` : explore.name;
+  const expandedExplores = searchParams.get("expanded")?.split(",") || [];
+  const isExpanded = expandedExplores.includes(exploreKey);
+  const hidden = startHidden ? !isExpanded : false;
 
   const toggleHidden = () => {
-    setHidden(!hidden);
+    const newExpandedExplores = isExpanded
+      ? expandedExplores.filter((key) => key !== exploreKey)
+      : [...expandedExplores, exploreKey];
+
+    const params = new URLSearchParams(searchParams);
+    if (newExpandedExplores.length > 0) {
+      params.set("expanded", newExpandedExplores.join(","));
+    } else {
+      params.delete("expanded");
+    }
+    setSearchParams(params);
   };
 
   const onClickingPreview = (event: React.MouseEvent) => {
