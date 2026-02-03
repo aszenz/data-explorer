@@ -32,5 +32,5 @@
     "noImplicitThis": true,
     "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts"]
+  "include": ["vite.config.ts", "playwright.config.ts", "plugins/**/*.ts"]
 }

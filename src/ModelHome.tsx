@@ -1,8 +1,10 @@
 import { useNavigate, useParams } from "react-router";
 import { quoteIfNecessary } from "./schema-utils";
 import { useRuntime } from "./contexts";
+import DownloadIcon from "../img/download.svg?react";
 import { SchemaRenderer } from "./Schema";
 import { type JSX } from "react/jsx-runtime";
+import { getModelDownloadUrl } from "./download-utils";
 
 export default ModelHome;
 
@@ -19,6 +21,17 @@ function ModelHome(): JSX.Element {
           <h1 className="model-name">Malloy model {modelName}</h1>
           <p className="model-type">Malloy Data Model</p>
         </div>
+        {modelName && (
+          <a
+            href={getModelDownloadUrl(modelName)}
+            download={`${modelName}.malloy`}
+            className="action-button"
+            title={`Download ${modelName}.malloy`}
+          >
+            <DownloadIcon aria-label="Download" />
+            Download Model
+          </a>
+        )}
       </div>
       <div className="model-content">
         <SchemaRenderer

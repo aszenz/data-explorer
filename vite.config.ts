@@ -2,12 +2,13 @@
 import { defineConfig, type UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
+import copyDownloadsPlugin from "./plugins/vite-plugin-copy-downloads";
 
 // https://vite.dev/config/
 const config: UserConfig = defineConfig({
   // NOTE: THIS PATH MUST END WITH A TRAILING SLASH
   base: process.env["BASE_PUBLIC_PATH"] ?? "/",
-  plugins: [react(), svgr()],
+  plugins: [react(), svgr(), copyDownloadsPlugin()],
   define: {
     "process.env": {},
   },
