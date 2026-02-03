@@ -47,6 +47,7 @@ import CompassIcon from "../img/compass.svg?react";
 import DatabaseIcon from "../img/database-icon.svg?react";
 import { type JSX } from "react/jsx-runtime";
 import { getDataDownloadUrl } from "./download-utils";
+import Menu from "./Menu";
 
 export { SchemaRenderer };
 export type { SchemaRendererProps };
@@ -155,6 +156,17 @@ function SchemaRenderer({
           </Link>
         )}
       </div>
+
+      <SchemaMobileMenu
+        activeTab={activeTab}
+        hasExplores={hasExplores}
+        exploresCount={explores.length}
+        hasQueries={hasQueries}
+        queriesCount={queries.length}
+        hasModelCode={!!modelCode}
+        hasDataSources={hasDataSources}
+        dataSourcesCount={referencedDataSources.length}
+      />
       <div className="schema-tab-content">
         {activeTab === "queries" && hasQueries && (
           <div className="field_list">
@@ -570,4 +582,95 @@ function buildTitle(field: Field, path: string) {
   return `${fieldName}
 Path: ${path}${path ? "." : ""}${fieldName}
 Type: ${typeLabel}`;
+}
+
+type SchemaMobileMenuProps = {
+  activeTab: "sources" | "queries" | "code" | "data";
+  hasExplores: boolean;
+  exploresCount: number;
+  hasQueries: boolean;
+  queriesCount: number;
+  hasModelCode: boolean;
+  hasDataSources: boolean;
+  dataSourcesCount: number;
+};
+
+function SchemaMobileMenu({
+  activeTab,
+  hasExplores,
+  exploresCount,
+  hasQueries,
+  queriesCount,
+  hasModelCode,
+  hasDataSources,
+  dataSourcesCount,
+}: SchemaMobileMenuProps): JSX.Element {
+  const [searchParams] = useSearchParams();
+
+  const getActiveTabLabel = () => {
+    switch (activeTab) {
+      case "sources":
+        return `Data Sources (${exploresCount.toString()})`;
+      case "queries":
+        return `Named Queries (${queriesCount.toString()})`;
+      case "code":
+        return "Malloy Definition";
+      case "data":
+        return `Raw Data (${dataSourcesCount.toString()})`;
+    }
+  };
+
+  const createTabUrl = (tab: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", tab);
+    return `?${params.toString()}`;
+  };
+
+  const allItems: Array<{
+    value: "sources" | "queries" | "code" | "data";
+    label: string;
+    to: string;
+    show: boolean;
+  }> = [
+    {
+      value: "sources" as const,
+      label: `Data Sources (${exploresCount.toString()})`,
+      to: createTabUrl("sources"),
+      show: hasExplores,
+    },
+    {
+      value: "queries" as const,
+      label: `Named Queries (${queriesCount.toString()})`,
+      to: createTabUrl("queries"),
+      show: hasQueries,
+    },
+    {
+      value: "code" as const,
+      label: "Malloy Definition",
+      to: createTabUrl("code"),
+      show: hasModelCode,
+    },
+    {
+      value: "data" as const,
+      label: `Raw Data (${dataSourcesCount.toString()})`,
+      to: createTabUrl("data"),
+      show: hasDataSources,
+    },
+  ];
+
+  const menuItems = allItems.filter((item) => item.show);
+
+  return (
+    <div className="schema-tabs-mobile">
+      <Menu
+        trigger={getActiveTabLabel()}
+        triggerClassName="schema-tabs-mobile-trigger"
+        items={menuItems.map((item) => ({
+          name: item.label,
+          to: item.to,
+          active: activeTab === item.value,
+        }))}
+      />
+    </div>
+  );
 }
