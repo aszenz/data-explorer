@@ -185,6 +185,7 @@ function SourceBreadcrumb({
       <span className="breadcrumb-separator">/</span>
       <BreadcrumbDropdown
         label={sourceName}
+        linkTo={`/model/${modelName}/${pageType}/${sourceName}`}
         items={sources.map((explore) => ({
           name: explore.name,
           to: `/model/${modelName}/${pageType}/${explore.name}`,

@@ -9,17 +9,111 @@ import {
   existsSync,
   readdirSync,
   statSync,
+  createReadStream,
 } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, basename } from "node:path";
 
 export default function copyDownloadsPlugin(): Plugin {
   let outDir: string;
+  let modelsDir: string;
 
   return {
     name: "vite-plugin-copy-downloads",
 
     configResolved(config) {
       outDir = resolve(config.root, config.build.outDir);
+      modelsDir = resolve(config.root, "models");
+    },
+
+    configureServer(server) {
+      // Respect Vite's base config
+      const base = server.config.base.endsWith("/")
+        ? server.config.base
+        : `${server.config.base}/`;
+      const downloadsPrefix = `${base}downloads/`;
+
+      server.middlewares.use((req, res, next) => {
+        const url = req.url || "";
+
+        if (!url.startsWith(downloadsPrefix)) {
+          next();
+          return;
+        }
+
+        // Strip the prefix and any query string, then decode
+        const pathPart = url.slice(downloadsPrefix.length).split("?")[0] || "";
+        const [rawCategory, ...rawRestParts] = pathPart
+          .split("/")
+          .filter(Boolean);
+
+        if (!rawCategory || rawRestParts.length === 0) {
+          next();
+          return;
+        }
+
+        // Decode URI components
+        const category = decodeURIComponent(rawCategory);
+        const restParts = rawRestParts.map((part) => decodeURIComponent(part));
+
+        // Reject any path traversal attempts
+        if (restParts.some((part) => part === ".." || part === ".")) {
+          res.statusCode = 400;
+          res.end("Bad Request");
+          return;
+        }
+
+        const rest = restParts.join("/");
+        let filePath: string;
+
+        if (category === "models" || category === "notebooks") {
+          // Models and notebooks both live in the top-level models directory.
+          filePath = join(modelsDir, rest);
+        } else if (category === "data") {
+          filePath = join(modelsDir, "data", rest);
+        } else {
+          next();
+          return;
+        }
+
+        // Verify the resolved path is within the allowed directory
+        const normalizedPath = resolve(filePath);
+        const allowedDir =
+          category === "data" ? resolve(modelsDir, "data") : resolve(modelsDir);
+        if (!normalizedPath.startsWith(allowedDir)) {
+          res.statusCode = 403;
+          res.end("Forbidden");
+          return;
+        }
+
+        if (!existsSync(filePath)) {
+          next();
+          return;
+        }
+
+        const stat = statSync(filePath);
+        if (!stat.isFile()) {
+          next();
+          return;
+        }
+
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/octet-stream");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${basename(filePath)}"`,
+        );
+
+        const stream = createReadStream(filePath);
+        stream.on("error", () => {
+          if (!res.headersSent) {
+            res.statusCode = 500;
+            res.end("Internal Server Error");
+          } else {
+            res.end();
+          }
+        });
+        stream.pipe(res);
+      });
     },
 
     closeBundle() {
@@ -27,7 +121,6 @@ export default function copyDownloadsPlugin(): Plugin {
       if (process.env["VITEST"] || process.env["NODE_ENV"] === "test") {
         return;
       }
-      const modelsDir = resolve(process.cwd(), "models");
       const downloadsDir = join(outDir, "downloads");
 
       // Create downloads directory structure

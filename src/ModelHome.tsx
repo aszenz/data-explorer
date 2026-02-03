@@ -29,7 +29,7 @@ function ModelHome(): JSX.Element {
             title={`Download ${modelName}.malloy`}
           >
             <DownloadIcon aria-label="Download" />
-            Download Model
+            Download
           </a>
         )}
       </div>

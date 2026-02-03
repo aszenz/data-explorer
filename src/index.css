@@ -355,7 +355,9 @@ button {
       opacity: 1;
     }
 
-    & button.breadcrumb-item:popover-open .menu-chevron {
+    &:has(.popover-menu-list:popover-open)
+      button.breadcrumb-item
+      .menu-chevron {
       opacity: 1;
       transform: rotate(180deg);
     }
@@ -891,11 +893,11 @@ button {
       outline: none;
       border-color: var(--color-accent);
     }
+  }
 
-    &:popover-open .menu-chevron {
-      opacity: 1;
-      transform: rotate(180deg);
-    }
+  &:has([popover]:popover-open) .schema-tabs-mobile-trigger .menu-chevron {
+    opacity: 1;
+    transform: rotate(180deg);
   }
 }
 
