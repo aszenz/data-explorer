@@ -32,5 +32,10 @@
     "noImplicitThis": true,
     "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "plugins/**/*.ts"]
+  "include": [
+    "vite.config.ts",
+    "playwright.config.ts",
+    "src/llms-txt/**/*.ts",
+    "plugins/**/*.ts"
+  ]
 }
