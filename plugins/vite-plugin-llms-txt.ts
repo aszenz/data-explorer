@@ -52,7 +52,6 @@ export default function llmsTxtPlugin(options: LlmsTxtPluginOptions): Plugin {
 
     return generateLlmsTxtContent({
       siteTitle,
-      basePath: config.base,
       siteUrl,
       models,
       dataFiles,
