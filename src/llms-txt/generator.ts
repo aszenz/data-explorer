@@ -8,7 +8,6 @@ import type { ExtractedModel } from "./types";
 
 export interface GeneratorOptions {
   siteTitle: string;
-  basePath: string;
   siteUrl: string;
   models: ExtractedModel[];
   dataFiles: string[];
@@ -16,20 +15,12 @@ export interface GeneratorOptions {
 }
 
 export function generateLlmsTxtContent(options: GeneratorOptions): string {
-  const { siteTitle, basePath, siteUrl, models, dataFiles, notebooks } =
-    options;
+  const { siteTitle, siteUrl, models, dataFiles, notebooks } = options;
 
   const sections = [
-    generateHeader(siteTitle, basePath, siteUrl),
-    generateOverview(
-      siteTitle,
-      basePath,
-      siteUrl,
-      models,
-      dataFiles,
-      notebooks,
-    ),
-    generateModelsSection(models, basePath),
+    generateHeader(siteTitle, siteUrl),
+    generateOverview(siteTitle, siteUrl, models, dataFiles, notebooks),
+    generateModelsSection(models, siteUrl),
     generateQueryParametersSection(),
     generateMalloyQueryGuide(),
   ];
@@ -37,13 +28,8 @@ export function generateLlmsTxtContent(options: GeneratorOptions): string {
   return sections.join("\n\n");
 }
 
-function generateHeader(
-  siteTitle: string,
-  basePath: string,
-  siteUrl: string,
-): string {
-  const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
-  const fullUrl = `${siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl}${base}/`;
+function generateHeader(siteTitle: string, siteUrl: string): string {
+  const fullUrl = `${siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl}/`;
   return `# ${siteTitle}
 
 > Malloy Data Explorer - Static web app for exploring semantic data models
@@ -54,14 +40,12 @@ function generateHeader(
 
 function generateOverview(
   _siteTitle: string,
-  basePath: string,
   siteUrl: string,
   models: ExtractedModel[],
   dataFiles: string[],
   notebooks: string[],
 ): string {
-  const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
-  const fullBase = `${siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl}${base}`;
+  const fullBase = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
 
   // Content summary
   const contentItems = [
@@ -136,13 +120,13 @@ function generateOverview(
 
 function generateModelsSection(
   models: ExtractedModel[],
-  basePath: string,
+  siteUrl: string,
 ): string {
   if (models.length === 0) {
     return "## Models\n\nNo models available.";
   }
 
-  const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+  const base = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
 
   const modelSections = models.map((model) => {
     const sourceSections = model.sources
