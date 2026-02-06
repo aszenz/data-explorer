@@ -20,16 +20,28 @@ import {
 export interface LlmsTxtPluginOptions {
   siteTitle?: string;
   modelsDir?: string;
+  siteUrl: string;
 }
 
-export default function llmsTxtPlugin(
-  options: LlmsTxtPluginOptions = {},
-): Plugin {
-  const { siteTitle = "Malloy Data Explorer", modelsDir = "models" } = options;
+export default function llmsTxtPlugin(options: LlmsTxtPluginOptions): Plugin {
+  const {
+    siteTitle = "Malloy Data Explorer",
+    modelsDir = "models",
+    siteUrl,
+  } = options;
 
   let config: ResolvedConfig;
 
   async function generateContent(): Promise<string> {
+    // Validate siteUrl is provided
+    if (!siteUrl || siteUrl.trim() === "") {
+      throw new Error(
+        "[llms.txt] SITE_URL environment variable is required. " +
+          "Set it in your build command or CI/CD workflow. " +
+          "Example: SITE_URL=https://example.com npm run build",
+      );
+    }
+
     const modelsDirPath = path.join(config.root, modelsDir);
 
     const [models, dataFiles, notebooks] = await Promise.all([
@@ -41,6 +53,7 @@ export default function llmsTxtPlugin(
     return generateLlmsTxtContent({
       siteTitle,
       basePath: config.base,
+      siteUrl,
       models,
       dataFiles,
       notebooks,

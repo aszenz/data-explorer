@@ -9,46 +9,63 @@ import type { ExtractedModel } from "./types";
 export interface GeneratorOptions {
   siteTitle: string;
   basePath: string;
+  siteUrl: string;
   models: ExtractedModel[];
   dataFiles: string[];
   notebooks: string[];
 }
 
 export function generateLlmsTxtContent(options: GeneratorOptions): string {
-  const { siteTitle, basePath, models, dataFiles, notebooks } = options;
+  const { siteTitle, basePath, siteUrl, models, dataFiles, notebooks } =
+    options;
 
   const sections = [
-    generateHeader(siteTitle, basePath),
-    generateOverview(siteTitle, basePath, models, dataFiles, notebooks),
+    generateHeader(siteTitle, basePath, siteUrl),
+    generateOverview(
+      siteTitle,
+      basePath,
+      siteUrl,
+      models,
+      dataFiles,
+      notebooks,
+    ),
     generateModelsSection(models, basePath),
+    generateQueryParametersSection(),
     generateMalloyQueryGuide(),
   ];
 
   return sections.join("\n\n");
 }
 
-function generateHeader(siteTitle: string, basePath: string): string {
+function generateHeader(
+  siteTitle: string,
+  basePath: string,
+  siteUrl: string,
+): string {
   const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+  const fullUrl = `${siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl}${base}/`;
   return `# ${siteTitle}
 
 > Malloy Data Explorer - Static web app for exploring semantic data models
 > All queries run in-browser using DuckDB WASM
 
-**Site URL:** \`${base}/\``;
+**Site URL:** \`${fullUrl}\``;
 }
 
 function generateOverview(
   _siteTitle: string,
   basePath: string,
+  siteUrl: string,
   models: ExtractedModel[],
   dataFiles: string[],
   notebooks: string[],
 ): string {
   const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+  const fullBase = `${siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl}${base}`;
 
   // Content summary
   const contentItems = [
-    `${String(models.length)} Malloy model${models.length !== 1 ? "s" : ""}`,
+    `${String(models.length)} model${models.length !== 1 ? "s" : ""}`,
     `${String(dataFiles.length)} data file${dataFiles.length !== 1 ? "s" : ""}`,
     ...(notebooks.length > 0
       ? [
@@ -57,35 +74,64 @@ function generateOverview(
       : []),
   ];
 
-  // Data files list (compact)
-  const dataFilesList =
-    dataFiles.length > 0 ? `\n\n**Data Files:** ${dataFiles.join(", ")}` : "";
+  // Pick first model with data for examples
+  const exampleModel = models.find((m) => m.sources.length > 0 && m.sources[0]);
+  let examples = "";
+  if (exampleModel?.sources[0]) {
+    const modelName = encodeURIComponent(exampleModel.name);
+    const source = exampleModel.sources[0];
+    const sourceName = encodeURIComponent(source.name);
 
-  // Notebooks list (compact - just names)
-  const notebooksList =
-    notebooks.length > 0 ? `\n\n**Notebooks:** ${notebooks.join(", ")}` : "";
+    const examplesList = [];
+
+    // Named query example
+    if (exampleModel.queries.length > 0 && exampleModel.queries[0]) {
+      const queryName = encodeURIComponent(exampleModel.queries[0].name);
+      examplesList.push(
+        `\`${fullBase}/#/model/${modelName}/query/${queryName}\` - Named query`,
+      );
+    }
+
+    // View example
+    if (source.views.length > 0 && source.views[0]) {
+      const viewQuery = encodeURIComponent(
+        `run: ${source.name} -> ${source.views[0].name}`,
+      );
+      examplesList.push(
+        `\`${fullBase}/#/model/${modelName}/explorer/${sourceName}?query=${viewQuery}&run=true\` - Run view`,
+      );
+    }
+
+    // Custom query example
+    const customQuery = encodeURIComponent(
+      `run: ${source.name} -> { select: * limit: 10 }`,
+    );
+    examplesList.push(
+      `\`${fullBase}/#/model/${modelName}/explorer/${sourceName}?query=${customQuery}&run=true\` - Custom query`,
+    );
+
+    if (examplesList.length > 0) {
+      examples = `\n\n**Example URLs:**\n${examplesList.join("\n")}`;
+    }
+  }
 
   return `## Overview
 
-**Content:** ${contentItems.join(" • ")}
-**Capabilities:** Browse schemas • Preview data • Build queries • Download results (CSV/JSON)${dataFilesList}${notebooksList}
+**Content:** ${contentItems.join(" • ")}${examples}
 
 ## URL Patterns
 
-All URLs with \`/#/\` prefix return HTML pages. \`/downloads/\` URLs return raw files.
-
-| Pattern | Returns | Description |
-|---------|---------|-------------|
-| \`${base}/#/\` | HTML | Home - list all models |
-| \`${base}/#/model/{model}\` | HTML | Model schema browser |
-| \`${base}/#/model/{model}/preview/{source}\` | HTML | Preview source data (50 rows) |
-| \`${base}/#/model/{model}/explorer/{source}\` | HTML | Interactive query builder |
-| \`${base}/#/model/{model}/explorer/{source}?query={malloy}&run=true\` | HTML | Execute query, show results |
-| \`${base}/#/model/{model}/query/{queryName}\` | HTML | Run named query, show results |
-| \`${base}/#/notebook/{notebook}\` | HTML | View notebook with queries/visualizations |
-| \`${base}/downloads/models/{model}.malloy\` | Text | Download model source file |
-| \`${base}/downloads/notebooks/{notebook}.malloynb\` | Text | Download notebook file |
-| \`${base}/downloads/data/{file}\` | File | Download data file (CSV/Parquet/JSON/Excel) |`;
+| Pattern | Description |
+|---------|-------------|
+| \`/#/\` | Home - list all models |
+| \`/#/model/{model}\` | Model schema |
+| \`/#/model/{model}/preview/{source}\` | Preview data (50 rows) |
+| \`/#/model/{model}/explorer/{source}\` | Interactive query builder |
+| \`/#/model/{model}/explorer/{source}?query={malloy}&run=true\` | Execute query |
+| \`/#/model/{model}/query/{queryName}\` | Run named query |
+| \`/#/notebook/{notebook}\` | View notebook |
+| \`/downloads/models/{model}.malloy\` | Download model file |
+| \`/downloads/data/{file}\` | Download data file |`;
 }
 
 function generateModelsSection(
@@ -162,6 +208,28 @@ ${sourceSections}`;
   return `## Models
 
 ${modelSections.join("\n\n---\n\n")}`;
+}
+
+function generateQueryParametersSection(): string {
+  return `## URL Query Parameters
+
+Control UI behavior with these query parameters:
+
+**Explorer (\`/model/{model}/explorer/{source}\`):**
+- \`query\` - Malloy query string (URL-encoded)
+- \`run=true\` - Auto-execute the query
+- \`includeTopValues=true\` - Load field top values
+- \`showQueryPanel=true\` - Expand query panel
+- \`showSourcePanel=true\` - Expand source/schema panel
+
+**Model Schema (\`/model/{model}\`):**
+- \`tab\` - Active tab name
+- \`expanded\` - Comma-separated list of expanded explores
+
+**Notebook (\`/notebook/{notebook}\`):**
+- \`cell-expanded\` - Index of fullscreen cell
+
+**Note:** Malloy queries must be URL-encoded. Space becomes \`%20\`, \`:\` becomes \`%3A\`, etc.`;
 }
 
 function generateMalloyQueryGuide(): string {

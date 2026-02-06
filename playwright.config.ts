@@ -91,6 +91,9 @@ const config: PlaywrightTestConfig = defineConfig({
             ? "http://localhost:3000"
             : "http://localhost:5173",
           reuseExistingServer: !process.env["CI"],
+          env: {
+            SITE_URL: "http://localhost:5173",
+          },
         },
       }),
 });
