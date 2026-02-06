@@ -30,6 +30,35 @@ sharing a link.
 
 A notebook is a sequence of markdown and Malloy results that are rendered together in a single page to explain data.
 
+## URL Query Parameters
+
+Control the UI and behavior using URL query parameters:
+
+### Explorer (`/#/model/{model}/explorer/{source}`)
+
+- **`query`** - Malloy query string (URL-encoded)
+- **`run=true`** - Auto-execute the query on page load
+- **`includeTopValues=true`** - Load top 10 values for field autocomplete (slower)
+- **`showQueryPanel=true`** - Expand query editor panel
+- **`showSourcePanel=true`** - Expand source/schema panel
+
+**Examples:**
+
+- [Run custom query](https://aszenz.github.io/data-explorer/#/model/sales_orders/explorer/sales_orders?query=run%3A%20sales_orders%20-%3E%20%7B%20select%3A%20*%20limit%3A%2010%20%7D&run=true)<br>
+  `/#/model/sales_orders/explorer/sales_orders?query=run%3A%20sales_orders%20-%3E%20%7B%20select%3A%20*%20limit%3A%2010%20%7D&run=true`
+
+- [Open with panels expanded](https://aszenz.github.io/data-explorer/#/model/sales_orders/explorer/sales_orders?showQueryPanel=true&showSourcePanel=true)<br>
+  `/#/model/sales_orders/explorer/sales_orders?showQueryPanel=true&showSourcePanel=true`
+
+### Model Schema (`/#/model/{model}`)
+
+- **`tab`** - Active tab name
+- **`expanded`** - Comma-separated list of sources to expand (e.g., `?expanded=users,orders`)
+
+### Notebook (`/#/notebook/{notebook}`)
+
+- **`cell-expanded`** - Cell index to show fullscreen (e.g., `?cell-expanded=2`)
+
 ## Publishing your own Malloy models and notebooks
 
 1. Clone the repo `git clone https://github.com/aszenz/data-explorer.git`
