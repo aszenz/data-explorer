@@ -65,18 +65,25 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v6
       - name: Install dependencies
         run: npm ci
       - name: Build website
         run: npm run build
-        # For gh pages deployment, base path is repository name
+        # GitHub Pages configuration (supports custom domains)
         env:
-          BASE_PUBLIC_PATH: /${{ github.event.repository.name }}/
+          BASE_PUBLIC_PATH: ${{ steps.pages.outputs.base_path }}/
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload Build Artifact
         # only run on pushes to master or workflow_dispatch
