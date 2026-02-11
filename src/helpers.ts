@@ -92,7 +92,7 @@ function setupMalloyRuntime({
 async function executeMalloyQuery(
   modelMaterializer: malloy.ModelMaterializer,
   query: string,
-  parsedQuery?: MalloyInterface.Query,
+  parsedQuery?: MalloyInterface.Query | string,
 ): Promise<SubmittedQuery> {
   const queryResolutionStartMillis = Date.now();
 

@@ -15,8 +15,10 @@ export type {
 type SourceExplorerLoaderData = {
   sourceInfo: MalloyInterface.SourceInfo;
   topValues: malloy.SearchValueMapResult[];
-  parsedQuery: undefined | MalloyInterface.Query;
+  parsedQuery: undefined | MalloyInterface.Query | string;
   submittedQuery: undefined | SubmittedQuery;
+  modelDef: malloy.ModelDef;
+  modelUri: URL;
 };
 
 type ModelHomeLoaderData = RuntimeSetup;
