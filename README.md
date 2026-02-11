@@ -38,6 +38,7 @@ Control the UI and behavior using URL query parameters:
 
 - **`query`** - Malloy query string (URL-encoded)
 - **`run=true`** - Auto-execute the query on page load
+- **`mode=code`** - Use code editor instead of structured query builder. Auto-inferred for queries with custom expressions, but can be set explicitly to always use the code editor.
 - **`includeTopValues=true`** - Load top 10 values for field autocomplete (slower)
 - **`showQueryPanel=true`** - Expand query editor panel
 - **`showSourcePanel=true`** - Expand source/schema panel

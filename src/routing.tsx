@@ -136,7 +136,7 @@ function createAppRouter({
   async function loadAndCacheMalloyQueryResult(
     source: SourceCache,
     modelMaterializer: malloy.ModelMaterializer,
-    parsedQuery: undefined | MalloyInterface.Query,
+    parsedQuery: undefined | MalloyInterface.Query | string,
     querySrc: string,
   ): Promise<SubmittedQuery> {
     return (
@@ -243,23 +243,32 @@ function createAppRouter({
                 const includeTopValues =
                   urlSearchParams.get("includeTopValues") === "true";
 
-                const { modelMaterializer } =
-                  await loadAndCacheModel(modelName);
+                const cachedModel = await loadAndCacheModel(modelName);
+                const { modelMaterializer } = cachedModel;
                 const source = await loadAndCacheSource(
                   modelName,
                   sourceName,
                   includeTopValues,
                 );
+                const modeParam = urlSearchParams.get("mode");
+                // When mode=code, keep the raw string for the code editor
                 const parsedQuery =
                   null === querySrcParam
                     ? undefined
-                    : loadAndCacheMalloyQuery(source, querySrcParam);
+                    : "code" === modeParam
+                      ? querySrcParam
+                      : (loadAndCacheMalloyQuery(source, querySrcParam) ??
+                        querySrcParam);
+                const structuredQuery =
+                  "string" === typeof parsedQuery ? undefined : parsedQuery;
                 const submittedQuery =
                   "true" === runQueryParam && null !== querySrcParam
                     ? await loadAndCacheMalloyQueryResult(
                         source,
                         modelMaterializer,
-                        parsedQuery,
+                        // In code mode, pass the raw string so submittedQuery.query
+                        // matches draftQuery for the "query was updated" comparison
+                        "code" === modeParam ? querySrcParam : structuredQuery,
                         querySrcParam,
                       )
                     : undefined;
@@ -269,6 +278,8 @@ function createAppRouter({
                   topValues: source.topValues,
                   parsedQuery,
                   submittedQuery,
+                  modelDef: cachedModel.model._modelDef,
+                  modelUri: getModelURL(modelName),
                 };
               },
               element: <ModelExplorer />,

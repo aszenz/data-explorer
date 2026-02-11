@@ -25,6 +25,7 @@
     "@shikijs/core": "^3.21.0",
     "@shikijs/engine-javascript": "^3.21.0",
     "@shikijs/themes": "^3.21.0",
+    "monaco-editor-core": "^0.55.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",
