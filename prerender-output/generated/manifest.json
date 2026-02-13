@@ -1,0 +1,41 @@
+{
+  "generated": "2026-02-01T12:45:38.593Z",
+  "routes": [
+    {
+      "type": "query",
+      "model": "invoices",
+      "name": "by_status",
+      "path": "/model/invoices/query/by_status.html"
+    },
+    {
+      "type": "query",
+      "model": "invoices",
+      "name": "invoice_summary",
+      "path": "/model/invoices/query/invoice_summary.html"
+    },
+    {
+      "type": "query",
+      "model": "invoices",
+      "name": "status_breakdown",
+      "path": "/model/invoices/query/status_breakdown.html"
+    },
+    {
+      "type": "preview",
+      "model": "invoices",
+      "name": "invoices",
+      "path": "/model/invoices/preview/invoices.html"
+    },
+    {
+      "type": "query",
+      "model": "ecommerce_orders",
+      "name": "orders_by_status",
+      "path": "/model/ecommerce_orders/query/orders_by_status.html"
+    },
+    {
+      "type": "preview",
+      "model": "ecommerce_orders",
+      "name": "orders",
+      "path": "/model/ecommerce_orders/preview/orders.html"
+    }
+  ]
+}

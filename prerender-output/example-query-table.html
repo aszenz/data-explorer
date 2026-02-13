@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pre-rendered Query: by_status - Data Explorer</title>
+  <style>
+    /* Base styles from Malloy render */
+    :root {
+      --malloy-font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --malloy-border-color: #e2e8f0;
+      --malloy-header-bg: #f8fafc;
+      --malloy-hover-bg: #f1f5f9;
+      --malloy-text-primary: #1e293b;
+      --malloy-text-secondary: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--malloy-font-family);
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      color: var(--malloy-text-primary);
+    }
+
+    /* Result page layout */
+    .result-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .result-header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--malloy-border-color);
+      padding-bottom: 16px;
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+    }
+
+    .result-subtitle {
+      font-size: 14px;
+      color: var(--malloy-text-secondary);
+      margin: 0;
+    }
+
+    .result-content {
+      overflow-x: auto;
+    }
+
+    /* Malloy table styles (from @malloydata/render) */
+    .malloy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .malloy-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .malloy-table th {
+      background: var(--malloy-header-bg);
+      border-bottom: 2px solid var(--malloy-border-color);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .malloy-table td {
+      border-bottom: 1px solid var(--malloy-border-color);
+      padding: 8px 12px;
+    }
+
+    .malloy-table tbody tr:hover {
+      background: var(--malloy-hover-bg);
+    }
+
+    /* Numeric columns right-aligned */
+    .malloy-table .numeric {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-paid { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-overdue { background: #fee2e2; color: #991b1b; }
+
+    /* Pre-render notice */
+    .prerender-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #1e40af;
+    }
+
+    /* Download link */
+    .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #f1f5f9;
+      color: #475569;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 16px;
+    }
+
+    .download-link:hover {
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="result-page">
+    <div class="prerender-notice">
+      This is a pre-rendered static HTML page. No JavaScript required for display.
+    </div>
+
+    <div class="result-header">
+      <h1 class="result-title">by_status</h1>
+      <p class="result-subtitle">Named Query from invoices.malloy</p>
+    </div>
+
+    <div class="result-content">
+      <!--
+        This table represents what MalloyViz.getHTML() would output
+        with disableVirtualization: true
+      -->
+      <table class="malloy-table">
+        <thead>
+          <tr>
+            <th>status</th>
+            <th class="numeric">invoice_count</th>
+            <th class="numeric">total_net_amount</th>
+            <th class="numeric">total_tax_amount</th>
+            <th class="numeric">avg_invoice_amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status-badge status-paid">Paid</span></td>
+            <td class="numeric">1,847</td>
+            <td class="numeric">$2,456,789.00</td>
+            <td class="numeric">$245,678.90</td>
+            <td class="numeric">$1,330.15</td>
+          </tr>
+          <tr>
+            <td><span class="status-badge status-pending">Pending</span></td>
+            <td class="numeric">523</td>
+            <td class="numeric">$678,234.00</td>
+            <td class="numeric">$67,823.40</td>
+            <td class="numeric">$1,296.81</td>
+          </tr>
+          <tr>
+            <td><span class="status-badge status-overdue">Overdue</span></td>
+            <td class="numeric">189</td>
+            <td class="numeric">$234,567.00</td>
+            <td class="numeric">$23,456.70</td>
+            <td class="numeric">$1,241.09</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <a href="data:text/csv;charset=utf-8,status,invoice_count,total_net_amount,total_tax_amount,avg_invoice_amount%0APaid,1847,2456789,245678.9,1330.15%0APending,523,678234,67823.4,1296.81%0AOverdue,189,234567,23456.7,1241.09"
+         download="by_status.csv"
+         class="download-link">
+        Download CSV
+      </a>
+    </div>
+  </div>
+</body>
+</html>

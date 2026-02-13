@@ -1,0 +1,48 @@
+diff --git a/node_modules/@malloydata/render/dist/module/api/malloy-viz.d.ts b/node_modules/@malloydata/render/dist/module/api/malloy-viz.d.ts
+index 0dbacfa..4c2a302 100644
+--- a/node_modules/@malloydata/render/dist/module/api/malloy-viz.d.ts
++++ b/node_modules/@malloydata/render/dist/module/api/malloy-viz.d.ts
+@@ -15,6 +15,12 @@ export declare class MalloyViz {
+     copyToHTML(): Promise<void>;
+     setResult(malloyResult: Malloy.Result): void;
+     render(targetElement?: HTMLElement): void;
++    /**
++     * Hydrate pre-rendered content with interactivity.
++     * Call this on elements that were pre-rendered using getHTML().
++     * @param targetElement - Element containing pre-rendered HTML with data-malloy-prerendered attribute
++     */
++    hydrate(targetElement?: HTMLElement): void;
+     remove(): void;
+     updateOptions(newOptions: Partial<MalloyRendererOptions>): void;
+     getMetadata(): RenderFieldMetadata | null;
+diff --git a/node_modules/@malloydata/render/dist/module/index.mjs b/node_modules/@malloydata/render/dist/module/index.mjs
+index 113bb8c..79ae815 100644
+--- a/node_modules/@malloydata/render/dist/module/index.mjs
++++ b/node_modules/@malloydata/render/dist/module/index.mjs
+@@ -173241,6 +173241,26 @@ class Nu {
+     };
+     this.disposeFn = CFt(() => Oe(pNt, i), this.targetElement);
+   }
++  hydrate(e) {
++    if (!this.result || !this.metadata)
++      throw new Error("Malloy Viz: No result to hydrate");
++    const r = e || this.targetElement;
++    if (!r) throw new Error("Malloy viz requires a target HTML element to hydrate");
++    const prerenderedContent = r.innerHTML;
++    const hasPrerendered = r.hasAttribute('data-malloy-prerendered') || prerenderedContent.includes('data-malloy-prerendered');
++    if (hasPrerendered) {
++      const scrollTop = r.scrollTop;
++      const scrollLeft = r.scrollLeft;
++      r.removeAttribute('data-malloy-prerendered');
++      this.render(r);
++      requestAnimationFrame(() => {
++        r.scrollTop = scrollTop;
++        r.scrollLeft = scrollLeft;
++      });
++    } else {
++      this.render(r);
++    }
++  }
+   remove() {
+     this.disposeFn && (this.disposeFn(), this.disposeFn = null), this.targetElement = null;
+   }
