@@ -1,3 +1,7 @@
+</p>
+  <img src="img/favicon-logo.svg" alt="Data Explorer Logo" width="128" />
+</p>
+
 # Data explorer
 
 Explore semantic data models written in [malloy](https://www.malloydata.dev/).
