@@ -67,7 +67,7 @@ Control the UI and behavior using URL query parameters:
 ## Publishing your own Malloy models and notebooks
 
 1. Clone the repo `git clone https://github.com/aszenz/data-explorer.git`
-2. Look at the `models` directory, it contains example models, notebooks and data files like [trading model](https://github.com/aszenz/data-explorer/blob/master/models%2Ftrading.malloy) which uses data from two csv files [orders](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/orders.csv) and [contracts](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/contracts.csv), you can add your own models, notebooks and their data files here.
+2. Look at the `models` directory, it contains example models, notebooks and data files like [ecommerce orders model](https://github.com/aszenz/data-explorer/blob/master/models%2Fecommerce_orders.malloy) which uses data from two csv files [orders](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/orders.csv) and [contracts](https://raw.githubusercontent.com/aszenz/data-explorer/refs/heads/master/models/data/contracts.csv), you can add your own models, notebooks and their data files here.
 3. Run `npm run start` to build and run the site locally at `http://localhost:3000`.
 4. Deploy your site by copying the generated `dist` folder to any static web hosting service (like GitHub Pages, Netlify, or Vercel) or serve it using any HTTP server.
 
