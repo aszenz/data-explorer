@@ -120,10 +120,16 @@ test.describe("Malloy editor mode", () => {
       timeout: 15000,
     });
 
-    // Wait for Monaco to load
+    // Wait for Monaco to fully initialize (container visible + content rendered).
+    // On macOS the WASM highlighter loads near-instantly, so the .monaco-editor
+    // element appears before React fully propagates context state. Without this
+    // wait the Run handler can take the structured-query path (no-op navigation).
     await expect(page.locator(".monaco-editor").first()).toBeVisible({
       timeout: 30000,
     });
+    await expect(
+      page.locator(".monaco-editor .view-lines .view-line"),
+    ).not.toHaveCount(0);
 
     // Run the query from editor mode
     await page.getByRole("button", { name: "Run" }).click();
