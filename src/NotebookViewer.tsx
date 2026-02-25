@@ -32,10 +32,10 @@ function NotebookViewer({
           <h2>{name ?? "Notebook"}</h2>
           <span className="count-badge">{contentCount} content</span>
           <span className="count-badge">{resultCount} results</span>
-          {notebook.rawContent && undefined !== notebookDownloadUrl && (
+          {notebook.rawContent && notebookDownloadUrl && (
             <a
               href={notebookDownloadUrl}
-              download={`${name}.malloynb`}
+              download={`${name ?? "Notebook"}.malloynb`}
               className="action-button download-button"
               title="Download notebook"
             >

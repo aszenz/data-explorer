@@ -22,7 +22,7 @@ function ModelHome(): JSX.Element {
           <h1 className="model-name">Malloy model {modelName}</h1>
           <p className="model-type">Malloy Data Model</p>
         </div>
-        {undefined !== modelDownloadUrl && (
+        {modelDownloadUrl && (
           <a
             href={modelDownloadUrl}
             download={`${modelName}.malloy`}

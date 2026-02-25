@@ -13,6 +13,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -48,6 +49,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -88,6 +90,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -116,6 +119,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -142,6 +146,7 @@ describe("extractReferencedDataFiles", () => {
       contents: {},
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -177,6 +182,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -207,6 +213,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
 
     const mockModel = createMockModel(mockModelDef);
@@ -251,6 +258,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
     const mockModel = createMockModel(mockModelDef);
 
@@ -300,6 +308,7 @@ describe("extractReferencedDataFiles", () => {
       },
       queryList: [],
       dependencies: {},
+      sourceRegistry: {},
     };
     const mockModel = createMockModel(mockModelDef);
 

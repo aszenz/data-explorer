@@ -69,7 +69,7 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
   protected override async runDuckDBQuery(
     sql: string,
     abortSignal?: AbortSignal,
-  ): Promise<{ rows: malloy.QueryDataRow[]; totalRows: number }> {
+  ): Promise<{ rows: malloy.QueryRecord[]; totalRows: number }> {
     if (null === this.connection) {
       throw new Error("Connection is null");
     }

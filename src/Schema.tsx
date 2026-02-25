@@ -7,7 +7,7 @@ import * as React from "react";
 import {
   Explore,
   type Field,
-  type NamedQuery,
+  type NamedQueryDef,
   type QueryField,
   type Model,
 } from "@malloydata/malloy";
@@ -54,12 +54,12 @@ export type { SchemaRendererProps };
 
 type SchemaRendererProps = {
   explores: Explore[];
-  queries: NamedQuery[];
+  queries: NamedQueryDef[];
   model?: Model;
   modelCode?: string;
   dataSources?: DataSourceInfo[];
   onFieldClick: (_field: Field) => void | Promise<void>;
-  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
+  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>;
   onPreviewClick: (_explore: Explore) => void | Promise<void>;
   onExploreClick: (_explore: Explore) => void | Promise<void>;
   defaultShow: boolean;
@@ -252,9 +252,9 @@ function FieldItem({ field, path, onFieldClick }: FieldItemProps) {
 }
 
 type QueryItemProps = {
-  query: NamedQuery | QueryField;
+  query: NamedQueryDef | QueryField;
   path: string;
-  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
+  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>;
 };
 
 function QueryItem({ query, path, onQueryClick }: QueryItemProps) {
@@ -278,7 +278,7 @@ type StructItemProps = {
   explore: Explore;
   path: string;
   onFieldClick: (_field: Field) => void | Promise<void>;
-  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>;
+  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>;
   onPreviewClick: (_explore: Explore) => void | Promise<void>;
   onExploreClick: (_explore: Explore) => void | Promise<void>;
   startHidden: boolean;
@@ -411,7 +411,7 @@ function StructItem({
 function fieldList(
   fields: Field[],
   path: string,
-  onQueryClick: (_query: NamedQuery | QueryField) => void | Promise<void>,
+  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>,
   onFieldClick: (_field: Field) => void | Promise<void>,
 ) {
   return (
