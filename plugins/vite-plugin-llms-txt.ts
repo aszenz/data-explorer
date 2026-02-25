@@ -5,10 +5,11 @@
  * and schema to help LLMs understand the data explorer site.
  *
  * In dev mode, serves llms.txt dynamically via middleware.
+ * In build mode, uses the generateBundle hook to extract hashed asset URLs
+ * from the output bundle and include them as download links.
  */
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
-import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import {
   extractModelsSchema,
@@ -32,8 +33,7 @@ export default function llmsTxtPlugin(options: LlmsTxtPluginOptions): Plugin {
 
   let config: ResolvedConfig;
 
-  async function generateContent(): Promise<string> {
-    // Validate siteUrl is provided
+  function validateSiteUrl(): void {
     if (!siteUrl || siteUrl.trim() === "") {
       throw new Error(
         "[llms.txt] SITE_URL environment variable is required. " +
@@ -41,22 +41,6 @@ export default function llmsTxtPlugin(options: LlmsTxtPluginOptions): Plugin {
           "Example: SITE_URL=https://example.com npm run build",
       );
     }
-
-    const modelsDirPath = path.join(config.root, modelsDir);
-
-    const [models, dataFiles, notebooks] = await Promise.all([
-      extractModelsSchema(modelsDirPath),
-      getDataFiles(modelsDirPath),
-      getNotebooks(modelsDirPath),
-    ]);
-
-    return generateLlmsTxtContent({
-      siteTitle,
-      siteUrl,
-      models,
-      dataFiles,
-      notebooks,
-    });
   }
 
   return {
@@ -66,14 +50,45 @@ export default function llmsTxtPlugin(options: LlmsTxtPluginOptions): Plugin {
       config = resolvedConfig;
     },
 
-    // DEV MODE: Serve llms.txt dynamically
+    // DEV MODE: Serve llms.txt dynamically using original source paths.
+    // NOTE: Download URLs in dev are root-relative without the base path prefix.
+    // If BASE_PUBLIC_PATH is set during development, the generated links in
+    // llms.txt may not include it (siteUrl defaults to http://localhost:5173).
+    // This is acceptable because BASE_PUBLIC_PATH is typically only set for
+    // production builds.
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req, res, next) => {
         if (req.url === "/llms.txt") {
           void (async () => {
             try {
-              // Regenerate on each request in dev mode for hot reloading
-              const content = await generateContent();
+              validateSiteUrl();
+              const modelsDirPath = path.join(config.root, modelsDir);
+              const [models, dataFiles, notebooks] = await Promise.all([
+                extractModelsSchema(modelsDirPath),
+                getDataFiles(modelsDirPath),
+                getNotebooks(modelsDirPath),
+              ]);
+
+              // URLs are root-relative (no base prefix) because the
+              // generator already prepends siteUrl which includes the base path.
+              const modelDownloadURLs: Record<string, string> = {};
+              for (const model of models) {
+                modelDownloadURLs[model.name] = `/models/${model.name}.malloy`;
+              }
+              const dataDownloadURLs: Record<string, string> = {};
+              for (const file of dataFiles) {
+                dataDownloadURLs[`data/${file}`] = `/models/data/${file}`;
+              }
+
+              const content = generateLlmsTxtContent({
+                siteTitle,
+                siteUrl,
+                models,
+                dataFiles,
+                notebooks,
+                modelDownloadURLs,
+                dataDownloadURLs,
+              });
               res.setHeader("Content-Type", "text/plain; charset=utf-8");
               res.end(content);
             } catch (error) {
@@ -90,24 +105,60 @@ export default function llmsTxtPlugin(options: LlmsTxtPluginOptions): Plugin {
       });
     },
 
-    // BUILD MODE: Generate file after bundle
-    async closeBundle() {
+    // BUILD MODE: Extract hashed asset URLs from the bundle and emit llms.txt
+    async generateBundle(_outputOptions, bundle) {
       if (process.env["VITEST"] || process.env["NODE_ENV"] === "test") {
         return;
       }
-      if (config.command !== "build") return;
 
       try {
-        const content = await generateContent();
+        validateSiteUrl();
+        const modelsDirPath = path.join(config.root, modelsDir);
+        const [models, dataFiles, notebooks] = await Promise.all([
+          extractModelsSchema(modelsDirPath),
+          getDataFiles(modelsDirPath),
+          getNotebooks(modelsDirPath),
+        ]);
 
-        const outputPath = path.join(
-          config.root,
-          config.build.outDir,
-          "llms.txt",
-        );
-        await fs.writeFile(outputPath, content, "utf-8");
+        // Extract download URLs from the output bundle's asset entries.
+        // URLs are root-relative (no base prefix) because the generator
+        // already prepends siteUrl which includes the base path.
+        const modelDownloadURLs: Record<string, string> = {};
+        const dataDownloadURLs: Record<string, string> = {};
 
-        console.log(`[llms.txt] Generated ${outputPath}`);
+        for (const asset of Object.values(bundle)) {
+          if (asset.type !== "asset") continue;
+          for (const originalFile of asset.originalFileNames) {
+            if (
+              originalFile.startsWith("models/") &&
+              originalFile.endsWith(".malloy")
+            ) {
+              const name = path.basename(originalFile, ".malloy");
+              modelDownloadURLs[name] = `/${asset.fileName}`;
+            } else if (originalFile.startsWith("models/data/")) {
+              const dataPath = originalFile.replace("models/", "");
+              dataDownloadURLs[dataPath] = `/${asset.fileName}`;
+            }
+          }
+        }
+
+        const content = generateLlmsTxtContent({
+          siteTitle,
+          siteUrl,
+          models,
+          dataFiles,
+          notebooks,
+          modelDownloadURLs,
+          dataDownloadURLs,
+        });
+
+        this.emitFile({
+          type: "asset",
+          fileName: "llms.txt",
+          source: content,
+        });
+
+        console.log("[llms.txt] Generated llms.txt");
       } catch (error) {
         console.error("[llms.txt] Error generating file:", error);
         throw error;

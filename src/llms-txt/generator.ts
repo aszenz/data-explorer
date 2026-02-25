@@ -12,15 +12,28 @@ export interface GeneratorOptions {
   models: ExtractedModel[];
   dataFiles: string[];
   notebooks: string[];
+  /** Maps model name (e.g. "ecommerce_orders") to its download URL */
+  modelDownloadURLs?: Record<string, string>;
+  /** Maps data file path (e.g. "data/orders.csv") to its download URL */
+  dataDownloadURLs?: Record<string, string>;
 }
 
 export function generateLlmsTxtContent(options: GeneratorOptions): string {
-  const { siteTitle, siteUrl, models, dataFiles, notebooks } = options;
+  const {
+    siteTitle,
+    siteUrl,
+    models,
+    dataFiles,
+    notebooks,
+    modelDownloadURLs = {},
+    dataDownloadURLs = {},
+  } = options;
 
   const sections = [
     generateHeader(siteTitle, siteUrl),
     generateOverview(siteTitle, siteUrl, models, dataFiles, notebooks),
-    generateModelsSection(models, siteUrl),
+    generateModelsSection(models, siteUrl, modelDownloadURLs),
+    generateDataFilesSection(dataFiles, dataDownloadURLs, siteUrl),
     generateQueryParametersSection(),
     generateMalloyQueryGuide(),
   ];
@@ -122,14 +135,13 @@ function generateOverview(
 | \`/#/model/{model}/explorer/{source}?query={malloy}&run=true\` | Execute query (structured builder) |
 | \`/#/model/{model}/explorer/{source}?query={malloy}&run=true&mode=code\` | Execute query (code editor — for custom aggregates) |
 | \`/#/model/{model}/query/{queryName}\` | Run named query |
-| \`/#/notebook/{notebook}\` | View notebook |
-| \`/downloads/models/{model}.malloy\` | Download model file |
-| \`/downloads/data/{file}\` | Download data file |`;
+| \`/#/notebook/{notebook}\` | View notebook |`;
 }
 
 function generateModelsSection(
   models: ExtractedModel[],
   siteUrl: string,
+  modelDownloadURLs: Record<string, string>,
 ): string {
   if (models.length === 0) {
     return "## Models\n\nNo models available.";
@@ -189,7 +201,11 @@ function generateModelsSection(
         ? `\n**Named Queries:** ${model.queries.map((q) => `\`${q.name}\``).join(", ")}`
         : "";
 
-    const urls = `[Browse](${base}/#/model/${encodeURIComponent(model.name)}) | [Download](${base}/downloads/models/${encodeURIComponent(model.name)}.malloy)`;
+    const downloadUrl = modelDownloadURLs[model.name];
+    const downloadLink = downloadUrl
+      ? ` | [Download](${base}${downloadUrl})`
+      : "";
+    const urls = `[Browse](${base}/#/model/${encodeURIComponent(model.name)})${downloadLink}`;
 
     return `### ${model.name}
 ${urls}${queriesInfo}
@@ -201,6 +217,32 @@ ${sourceSections}`;
   return `## Models
 
 ${modelSections.join("\n\n---\n\n")}`;
+}
+
+function generateDataFilesSection(
+  dataFiles: string[],
+  dataDownloadURLs: Record<string, string>,
+  siteUrl: string,
+): string {
+  if (dataFiles.length === 0) {
+    return "";
+  }
+
+  const base = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
+
+  const rows = dataFiles
+    .map((file) => {
+      const url = dataDownloadURLs[`data/${file}`];
+      const link = url ? `[${file}](${base}${url})` : file;
+      return `| ${link} |`;
+    })
+    .join("\n");
+
+  return `## Data Files
+
+| File |
+|------|
+${rows}`;
 }
 
 function generateQueryParametersSection(): string {
