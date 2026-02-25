@@ -6,26 +6,23 @@ import mvpWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url
 import duckdbWasmEh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 import ehWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
 
-export type GetDataset = (
-  _table: string,
-) => Promise<{ data: Blob; fileType: SupportedFileType } | null>;
-export type SupportedFileType =
-  | "csv"
-  | "parquet"
-  | "json"
-  | "jsonl"
-  | "ndjson"
-  | "xlsx";
+/**
+ * Map of dataset file paths to their serving URLs.
+ * e.g. { "data/orders.csv": "/assets/orders-abc123.csv" }
+ */
+export type DataFileURLs = Record<string, string>;
+
 export default class DuckDBConnection extends DuckDBWASMConnection {
-  private getDataset: GetDataset;
+  private dataFileURLs: DataFileURLs;
+  private registrationPromise: Promise<void> | null = null;
 
   constructor(
-    getDataset: GetDataset,
+    dataFileURLs: DataFileURLs,
     duckdbWasmOptions: { name: string; additionalExtensions?: string[] },
     queryOptions: malloy.QueryOptionsReader,
   ) {
     super({ ...duckdbWasmOptions, motherDuckToken: undefined }, queryOptions);
-    this.getDataset = getDataset;
+    this.dataFileURLs = dataFileURLs;
   }
 
   override getBundles(): duckdb.DuckDBBundles {
@@ -66,7 +63,8 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
   }
 
   /**
-   * Override the runDuckDBQuery method to load the required tables from the server
+   * Override the runDuckDBQuery method to ensure files are registered
+   * before any query execution.
    */
   protected override async runDuckDBQuery(
     sql: string,
@@ -76,39 +74,9 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
       throw new Error("Connection is null");
     }
     console.log({ sql });
-    const connection = this.connection;
-    const tablesRequiredForQueryExecution = [
-      ...new Set(await connection.getTableNames(sql)),
-    ];
-    console.log({ tablesRequiredForQueryExecution });
-    const alreadyLoadedTables = (await connection.query("SHOW TABLES"))
-      .toArray()
-      .map((row: { [columnName: string]: string }) => Object.values(row)[0]);
-    // TODO: Don't load the full table for describe queries
-    // Describe queries are used to load the schema of the table
-    console.time("Setting up datasources");
-    await Promise.all(
-      tablesRequiredForQueryExecution
-        .filter((table) => !alreadyLoadedTables.includes(table))
-        .map(async (table) => {
-          const datasetContents = await this.getDataset(table);
-          if (null === datasetContents) {
-            console.info(
-              `Dataset ${table} not found in local files, installing httpfs to load it directly, assuming it's a duckdb supported uri`,
-            );
-            await this.connection?.query("install httpfs");
-            await this.connection?.query("load httpfs");
-            return;
-          }
 
-          await this._loadDataFromFile(
-            table,
-            datasetContents.data,
-            datasetContents.fileType,
-          );
-        }),
-    );
-    console.timeEnd("Setting up datasources");
+    await this._registerAllFiles();
+
     console.time("Running query");
     const result = await super.runDuckDBQuery(sql, abortSignal);
     console.timeEnd("Running query");
@@ -116,76 +84,49 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
   }
 
   /**
-   * Load data into DuckDB using the appropriate method based on file type
+   * Register all known data files as URLs in DuckDB's virtual filesystem.
+   * DuckDB fetches them on demand when a query needs them.
+   * This supports both direct references (data/orders.csv) and
+   * glob patterns (data/serverlogs/*.csv) natively via DuckDB-WASM's
+   * _files Map prefix-matching (no httpfs extension needed for this).
+   *
+   * httpfs is loaded because Malloy-generated SQL may reference external
+   * URLs directly (e.g. https://...) which requires the extension for
+   * URL scheme recognition by DuckDB's SQL parser.
    */
-  private async _loadDataFromFile(
-    tableName: string,
-    fileContent: Blob,
-    fileType: SupportedFileType,
-  ): Promise<void> {
-    if (null === this.connection) {
-      throw new Error("Connection is null");
-    }
+  private _registerAllFiles(): Promise<void> {
+    this.registrationPromise ??= this._doRegisterAllFiles();
+    return this.registrationPromise;
+  }
+
+  private async _doRegisterAllFiles(): Promise<void> {
     if (null === this.database) {
       throw new Error("Database is null");
     }
-    const fileName = `file_${tableName}`;
-
-    switch (fileType) {
-      case "csv":
-        await this.database.registerFileText(
-          fileName,
-          await fileContent.text(),
-        );
-        await this.connection.query(
-          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_csv_auto('${fileName}')`,
-        );
-        break;
-      case "xlsx":
-        await this.database.registerFileBuffer(
-          fileName,
-          new Uint8Array(await fileContent.arrayBuffer()),
-        );
-        await this.connection.query(
-          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_xlsx('${fileName}')`,
-        );
-        break;
-      case "parquet":
-        console.log({ fileContent });
-        await this.database.registerFileBuffer(
-          fileName,
-          new Uint8Array(await fileContent.arrayBuffer()),
-        );
-        await this.connection.query(
-          `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_parquet('${fileName}')`,
-        );
-        break;
-
-      case "json":
-      case "jsonl":
-      case "ndjson":
-        await this.database.registerFileText(
-          fileName,
-          await fileContent.text(),
-        );
-        if (fileType === "json") {
-          await this.connection.query(
-            `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_json('${fileName}', auto_detect=true)`,
-          );
-        } else {
-          await this.connection.query(
-            `CREATE OR REPLACE VIEW "${tableName}" AS SELECT * FROM read_json('${fileName}', format='newline_delimited', auto_detect=true)`,
-          );
-        }
-        break;
-
-      default:
-        assertExhaustive(fileType);
+    if (null === this.connection) {
+      throw new Error("Connection is null");
     }
-  }
-}
+    const db = this.database;
 
-function assertExhaustive(fileType: never) {
-  console.error({ fileType });
-  throw new Error(`Unsupported file type`);
+    await this.connection.query("install httpfs");
+    await this.connection.query("load httpfs");
+
+    const entries = Object.entries(this.dataFileURLs);
+    console.log(`Registering ${entries.length.toString()} data file URLs`);
+
+    await Promise.all(
+      entries.map(([name, url]) => {
+        // directIO enables range-request reading — beneficial for Parquet
+        // (only metadata + needed row groups are fetched). For CSV/JSON/XLSX
+        // the full file is read sequentially anyway so buffering is cheaper.
+        const directIO = name.endsWith(".parquet");
+        return db.registerFileURL(
+          name,
+          url,
+          duckdb.DuckDBDataProtocol.HTTP,
+          directIO,
+        );
+      }),
+    );
+  }
 }

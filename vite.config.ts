@@ -3,7 +3,6 @@ import { defineConfig } from "vite";
 import type { UserConfigFnObject } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
-import copyDownloadsPlugin from "./plugins/vite-plugin-copy-downloads";
 import llmsTxtPlugin from "./plugins/vite-plugin-llms-txt";
 
 // https://vite.dev/config/
@@ -25,11 +24,19 @@ const config: ReturnType<typeof defineConfig> = defineConfig((({ mode }) => {
     plugins: [
       react(),
       svgr(),
-      copyDownloadsPlugin(),
       llmsTxtPlugin({
         siteUrl,
       }),
     ],
+    build: {
+      assetsInlineLimit(filePath: string) {
+        // Never inline model/data/notebook assets — they need stable URLs
+        // for DuckDB file registration and download links
+        if (filePath.includes("/models/")) return false;
+        // Everything else uses the default 4 KiB threshold
+        return undefined;
+      },
+    },
     define: {
       "process.env": {},
     },

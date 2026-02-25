@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import NotebookCellRenderer from "./NotebookCellRenderer";
 import type { NotebookOutput } from "./notebook-types";
 import DownloadIcon from "../img/download.svg?react";
-import { getNotebookDownloadUrl } from "./download-utils";
+import { useNotebookDownloadUrl } from "./download-utils";
 
 export default NotebookViewer;
 export type { NotebookViewerProps };
@@ -23,6 +23,7 @@ function NotebookViewer({
     (c) => c.type === "markdown",
   ).length;
   const resultCount = notebook.cells.filter((c) => c.type === "malloy").length;
+  const notebookDownloadUrl = useNotebookDownloadUrl(name ?? "");
 
   return (
     <div className="notebook-container">
@@ -31,9 +32,9 @@ function NotebookViewer({
           <h2>{name ?? "Notebook"}</h2>
           <span className="count-badge">{contentCount} content</span>
           <span className="count-badge">{resultCount} results</span>
-          {notebook.rawContent && name && (
+          {notebook.rawContent && undefined !== notebookDownloadUrl && (
             <a
-              href={getNotebookDownloadUrl(name)}
+              href={notebookDownloadUrl}
               download={`${name}.malloynb`}
               className="action-button download-button"
               title="Download notebook"

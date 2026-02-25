@@ -46,7 +46,7 @@ import EyeIcon from "../img/eye.svg?react";
 import CompassIcon from "../img/compass.svg?react";
 import DatabaseIcon from "../img/database-icon.svg?react";
 import { type JSX } from "react/jsx-runtime";
-import { getDataDownloadUrl } from "./download-utils";
+
 import Menu from "./Menu";
 
 export { SchemaRenderer };
@@ -207,7 +207,7 @@ function SchemaRenderer({
               return (
                 <a
                   key={source.path}
-                  href={getDataDownloadUrl(filename)}
+                  href={source.url}
                   download={filename}
                   className="raw-data-item"
                   title={`Download ${filename}`}

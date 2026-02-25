@@ -5,7 +5,7 @@ import type {
   QueryResponse,
   SubmittedQuery,
 } from "@malloydata/malloy-explorer";
-import type { GetDataset } from "./connection";
+import type { DataFileURLs } from "./connection";
 import DuckDBConnection from "./connection";
 import { parseNotebook, validateNotebook } from "./notebook-parser";
 
@@ -21,19 +21,19 @@ export {
 type RuntimeOptions = {
   models: Record<string, string>;
   notebooks: Record<string, string>;
-  getDataset: GetDataset;
+  dataFileURLs: DataFileURLs;
 };
 
 function setupMalloyRuntime({
   models,
   notebooks,
-  getDataset,
+  dataFileURLs,
 }: RuntimeOptions): {
   runtime: malloy.SingleConnectionRuntime<DuckDBConnection>;
   getModelURL: (_modelName: string) => URL;
 } {
   const conn = new DuckDBConnection(
-    getDataset,
+    dataFileURLs,
     { name: "main" },
     {
       // This is the default row limit of the connection (when no row limit is provided)
@@ -46,7 +46,7 @@ function setupMalloyRuntime({
   };
   const urlToName = (url: URL): string => {
     return decodeURIComponent(url.pathname.replace("/", "")).replace(
-      ".malloy",
+      /\.malloy$/,
       "",
     );
   };

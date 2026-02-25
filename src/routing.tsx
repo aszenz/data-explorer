@@ -24,8 +24,24 @@ import { executeNotebook } from "./notebook-executor";
 import type { RuntimeSetup } from "./types";
 
 import type * as RouteTypes from "./routeType";
-import type { GetDataset } from "./connection";
+import type { DataFileURLs } from "./connection";
 import type { DataSourceInfo } from "./types";
+
+function dataFileURLsToDataSources(
+  dataFileURLs: DataFileURLs,
+): DataSourceInfo[] {
+  return Object.entries(dataFileURLs).map(([dataPath, url]) => {
+    const fileName = dataPath.split("/").pop() ?? dataPath;
+    const name = fileName.replace(/\.[^/.]+$/, "");
+    const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+    return {
+      name,
+      path: `/models/${dataPath}`,
+      url,
+      fileType: extension,
+    };
+  });
+}
 
 export default createAppRouter;
 
@@ -45,17 +61,16 @@ type ModelsCache = Map<string, ModelCache>;
 type RouterOptions = {
   models: Record<string, string>;
   notebooks: Record<string, string>;
-  dataSources: DataSourceInfo[];
-  getDataset: GetDataset;
+  dataFileURLs: DataFileURLs;
 };
 function createAppRouter({
   models,
   notebooks,
-  dataSources,
-  getDataset,
+  dataFileURLs,
 }: RouterOptions): ReturnType<typeof createHashRouter> {
+  const dataSources = dataFileURLsToDataSources(dataFileURLs);
   const { runtime, getModelURL } = setupMalloyRuntime({
-    getDataset,
+    dataFileURLs,
     models,
     notebooks,
   });
