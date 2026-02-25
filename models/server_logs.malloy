@@ -1,0 +1,97 @@
+-- Server Logs Analysis Model
+-- Demonstrates using DuckDB's glob pattern to read multiple Parquet files
+-- Each file represents a day of HTTP server access logs
+source: logs is duckdb.table('data/serverlogs/*.parquet') extend {
+    dimension: ts is `timestamp`
+    dimension: log_date is ts.day
+    dimension: hour_of_day is hour(ts)
+    dimension: is_error is status_code >= 400
+    dimension: status_category is
+        pick '2xx Success' when status_code >= 200 and status_code < 300
+        pick '4xx Client Error' when status_code >= 400 and status_code < 500
+        pick '5xx Server Error' when status_code >= 500
+        else 'Other'
+
+    measure: request_count is count()
+    measure: error_count is count() { where: is_error }
+    measure: error_rate is error_count / request_count * 100
+    measure: avg_response_time is response_time_ms.avg()
+    -- measure: p95_response_time is approx_quantile!(response_time_ms, 0.95)
+    measure: total_bytes is bytes_sent.sum()
+    measure: unique_ips is count(client_ip)
+
+    view: by_method is {
+        group_by: method
+        aggregate:
+            request_count
+            avg_response_time
+            error_rate
+    }
+
+    view: by_path is {
+        group_by: path
+        aggregate:
+            request_count
+            avg_response_time
+            error_rate
+        order_by: request_count desc
+    }
+
+    view: by_status is {
+        group_by: status_category
+        aggregate:
+            request_count
+    }
+
+    view: by_server is {
+        group_by: server
+        aggregate:
+            request_count
+            avg_response_time
+            error_rate
+    }
+
+    view: by_hour is {
+        group_by: hour_of_day
+        aggregate:
+            request_count
+            avg_response_time
+            error_rate
+        order_by: hour_of_day
+    }
+
+    view: by_date is {
+        group_by: log_date
+        aggregate:
+            request_count
+            avg_response_time
+            error_rate
+            unique_ips
+        order_by: log_date
+    }
+
+    # dashboard
+    view: overview is {
+        aggregate:
+            request_count
+            error_rate
+            avg_response_time
+            unique_ips
+            total_bytes
+        # bar_chart
+        nest: by_status
+        # bar_chart
+        nest: by_method
+        # bar_chart
+        nest: by_path
+        # bar_chart
+        nest: by_server
+        # bar_chart
+        nest: by_hour
+        # bar_chart
+        nest: by_date
+    }
+}
+
+query: all_logs is logs -> { select: * }
+query: log_summary is logs -> overview
