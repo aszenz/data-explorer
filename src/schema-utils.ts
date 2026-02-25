@@ -253,7 +253,7 @@ const getTypeLabel = (field: Field): string => {
   }
   const type = fieldType(field);
   if (field.isAtomicField() && field.isUnsupported()) {
-    return `${type} ${undefined !== field.rawType ? `(${field.rawType})` : ""}}`;
+    return `${type} ${undefined !== field.rawType ? `(${field.rawType})` : ""}`;
   }
   return type;
 };
