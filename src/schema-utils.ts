@@ -3,6 +3,7 @@
  * REPO: https://github.com/malloydata/malloy-vscode-extension
  * FILE: https://github.com/malloydata/malloy-vscode-extension/blob/cde23d2459f4d7d4240d609b454cb9e8d47757e9/src/common/schema.ts
  */
+import picomatch from "picomatch";
 import type {
   AtomicFieldType,
   AtomicTypeDef,
@@ -195,14 +196,19 @@ function extractReferencedDataFiles(
     }
   }
 
-  // Filter dataSources to only include referenced files
+  // Filter dataSources to only include referenced files.
+  const matchers = [...referencedPaths].map((refPath) => {
+    if (!picomatch.scan(refPath).isGlob)
+      return (path: string) => path === refPath;
+    return picomatch(refPath);
+  });
+
   return dataSources.filter((source) => {
     const fileName = `${source.name}.${source.fileType}`;
     const pathWithData = `data/${fileName}`;
-    return (
-      referencedPaths.has(fileName) ||
-      referencedPaths.has(pathWithData) ||
-      referencedPaths.has(source.path.replace("/models/", ""))
+    const relativePath = source.path.replace("/models/", "");
+    return matchers.some(
+      (m) => m(fileName) || m(pathWithData) || m(relativePath),
     );
   });
 }

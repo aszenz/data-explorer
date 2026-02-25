@@ -20,13 +20,13 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
       {
         name: "products",
-        path: "/data/products.parquet",
+        path: "/models/data/products.parquet",
         url: "http://localhost/data/products.parquet",
         fileType: "parquet",
       },
@@ -55,19 +55,19 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
       {
         name: "products",
-        path: "/data/products.csv",
+        path: "/models/data/products.csv",
         url: "http://localhost/data/products.csv",
         fileType: "csv",
       },
       {
         name: "orders",
-        path: "/data/orders.parquet",
+        path: "/models/data/orders.parquet",
         url: "http://localhost/data/orders.parquet",
         fileType: "parquet",
       },
@@ -95,7 +95,7 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
@@ -123,7 +123,7 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
@@ -149,7 +149,7 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
@@ -184,7 +184,7 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
@@ -214,19 +214,19 @@ describe("extractReferencedDataFiles", () => {
     const dataSources: DataSourceInfo[] = [
       {
         name: "users",
-        path: "/data/users.parquet",
+        path: "/models/data/users.parquet",
         url: "http://localhost/data/users.parquet",
         fileType: "parquet",
       },
       {
         name: "products",
-        path: "/data/products.csv",
+        path: "/models/data/products.csv",
         url: "http://localhost/data/products.csv",
         fileType: "csv",
       },
       {
         name: "logs",
-        path: "/data/logs.json",
+        path: "/models/data/logs.json",
         url: "http://localhost/data/logs.json",
         fileType: "json",
       },
@@ -240,6 +240,94 @@ describe("extractReferencedDataFiles", () => {
       "json",
       "parquet",
     ]);
+  });
+
+  test("matches glob pattern to multiple data files", () => {
+    const mockModelDef: ModelDef = {
+      name: "test-model",
+      exports: [],
+      contents: {
+        logs: createTableSource("logs", "duckdb:data/serverlogs/*.csv"),
+      },
+      queryList: [],
+      dependencies: {},
+    };
+    const mockModel = createMockModel(mockModelDef);
+
+    const dataSources: DataSourceInfo[] = [
+      {
+        name: "jan_15",
+        path: "/models/data/serverlogs/jan_15.csv",
+        url: "/assets/jan_15.csv",
+        fileType: "csv",
+      },
+      {
+        name: "jan_16",
+        path: "/models/data/serverlogs/jan_16.csv",
+        url: "/assets/jan_16.csv",
+        fileType: "csv",
+      },
+      {
+        name: "jan_17",
+        path: "/models/data/serverlogs/jan_17.csv",
+        url: "/assets/jan_17.csv",
+        fileType: "csv",
+      },
+      {
+        name: "orders",
+        path: "/models/data/orders.csv",
+        url: "/assets/orders.csv",
+        fileType: "csv",
+      },
+    ];
+
+    const result = extractReferencedDataFiles(mockModel, dataSources);
+
+    expect(result).toHaveLength(3);
+    expect(result.map((r) => r.name).sort()).toEqual([
+      "jan_15",
+      "jan_16",
+      "jan_17",
+    ]);
+  });
+
+  test("matches ** recursive glob pattern", () => {
+    const mockModelDef: ModelDef = {
+      name: "test-model",
+      exports: [],
+      contents: {
+        all_csv: createTableSource("all_csv", "duckdb:data/**/*.csv"),
+      },
+      queryList: [],
+      dependencies: {},
+    };
+    const mockModel = createMockModel(mockModelDef);
+
+    const dataSources: DataSourceInfo[] = [
+      {
+        name: "jan_15",
+        path: "/models/data/serverlogs/jan_15.csv",
+        url: "/assets/jan_15.csv",
+        fileType: "csv",
+      },
+      {
+        name: "orders",
+        path: "/models/data/orders.csv",
+        url: "/assets/orders.csv",
+        fileType: "csv",
+      },
+      {
+        name: "invoices",
+        path: "/models/data/invoices.parquet",
+        url: "/assets/invoices.parquet",
+        fileType: "parquet",
+      },
+    ];
+
+    const result = extractReferencedDataFiles(mockModel, dataSources);
+
+    expect(result).toHaveLength(2);
+    expect(result.map((r) => r.name).sort()).toEqual(["jan_15", "orders"]);
   });
 });
 
