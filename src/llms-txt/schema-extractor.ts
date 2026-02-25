@@ -229,7 +229,6 @@ export async function getDataFiles(modelsDir: string): Promise<string[]> {
     return [];
   }
 
-  const files = await fs.readdir(dataDir);
   const extensions = [
     ".csv",
     ".parquet",
@@ -238,6 +237,8 @@ export async function getDataFiles(modelsDir: string): Promise<string[]> {
     ".ndjson",
     ".xlsx",
   ];
+
+  const files = await fs.readdir(dataDir, { recursive: true });
   return files.filter((f) => extensions.some((ext) => f.endsWith(ext)));
 }
 
