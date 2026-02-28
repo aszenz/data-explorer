@@ -648,7 +648,7 @@ button {
 
 /* === MODEL HOME === */
 .model-home {
-  min-width: 80%;
+  width: 100%;
   margin: 0 auto;
   padding-top: var(--spacing-md);
 
@@ -694,6 +694,7 @@ button {
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-sm);
+    margin-bottom: 5%;
   }
 
   & .model-download {
