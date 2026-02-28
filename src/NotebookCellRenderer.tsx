@@ -35,7 +35,7 @@ function NotebookCellRenderer({
       } else {
         newParams.delete(cellExpanded);
       }
-      setSearchParams(newParams);
+      setSearchParams(newParams, { replace: true });
     }
     popoverElement?.addEventListener("toggle", toggleSearchParams);
     if (cellIndexStr === searchParams.get(cellExpanded)) {

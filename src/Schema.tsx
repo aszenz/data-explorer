@@ -311,7 +311,7 @@ function StructItem({
     } else {
       params.delete("expanded");
     }
-    setSearchParams(params);
+    setSearchParams(params, { replace: true });
   };
 
   const onClickingPreview = (event: React.MouseEvent) => {
