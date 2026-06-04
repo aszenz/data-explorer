@@ -37,7 +37,7 @@ function ModelHome(): JSX.Element {
       <div className="model-content">
         <SchemaRenderer
           explores={runtime.model.exportedExplores}
-          queries={runtime.model.namedQueries}
+          queries={runtime.model.queries().named}
           model={runtime.model}
           modelCode={runtime.modelCode}
           dataSources={runtime.dataSources}
@@ -63,14 +63,14 @@ function ModelHome(): JSX.Element {
           }}
           onQueryClick={(query) => {
             console.log("query", query);
-            if ("parentExplore" in query) {
-              const source = query.parentExplore.name;
-              const queryString = `run: ${quoteIfNecessary(source)}->${quoteIfNecessary(query.name)}`;
-              return navigate(
-                `explorer/${source}?query=${queryString}&run=true&load=true`,
-              );
+            if (typeof query === "string") {
+              return navigate(`query/${query}`);
             }
-            return navigate(`query/${query.name}`);
+            const source = query.parentExplore.name;
+            const queryString = `run: ${quoteIfNecessary(source)}->${quoteIfNecessary(query.name)}`;
+            return navigate(
+              `explorer/${source}?query=${queryString}&run=true&load=true`,
+            );
           }}
           onExploreClick={(explore) => {
             const source = explore.name;

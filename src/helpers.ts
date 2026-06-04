@@ -163,17 +163,13 @@ async function compileAndRun(
   modelMaterializer: malloy.ModelMaterializer,
   query: string,
 ): Promise<MalloyInterface.Result> {
-  try {
-    const runnable = modelMaterializer.loadQuery(query);
-    const rowLimit = (await runnable.getPreparedResult()).resultExplore.limit;
-    const result =
-      undefined === rowLimit
-        ? await runnable.run()
-        : await runnable.run({ rowLimit });
-    return malloy.API.util.wrapResult(result);
-  } catch (error) {
-    return Promise.reject(error as Error);
-  }
+  const runnable = modelMaterializer.loadQuery(query);
+  const rowLimit = (await runnable.getPreparedResult()).resultExplore.limit;
+  const result =
+    undefined === rowLimit
+      ? await runnable.run()
+      : await runnable.run({ rowLimit });
+  return malloy.API.util.wrapResult(result);
 }
 
 function findSource(

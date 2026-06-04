@@ -11,7 +11,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-compat }: 
+  outputs = { self, nixpkgs, flake-compat }:
     let
     # System types to support.
     supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
@@ -26,17 +26,19 @@
     in {
 
     devShells = forAllSystems (system:
-      let 
-        pkgs = nixpkgsFor.${system}; 
+      let
+        pkgs = nixpkgsFor.${system};
+        nix-browsers = nixpkgsFor.${system}.playwright-driver.browsers;
       in
       {
         default = pkgs.mkShell {
-          buildInputs = [ pkgs.nodejs_22 ];
+          buildInputs = [ pkgs.nodejs_24 ];
           shellHook = ''
-            # To make malloy extension work on nixos
-            export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib";
-            # To run playwright with browsers installed via nixpkgs
-            export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
+            # Use the Playwright browsers shipped by nixpkgs. The pinned
+            # @playwright/test version in package.json must match
+            # playwright-driver (${pkgs.playwright-driver.version}) so the
+            # expected browser revisions line up.
+            export PLAYWRIGHT_BROWSERS_PATH="${nix-browsers}"
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
           '';
         };

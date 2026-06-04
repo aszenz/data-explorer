@@ -153,8 +153,8 @@ function extractFromModel(
   });
 
   // Extract named queries
-  const queries: ExtractedQuery[] = model.namedQueries.map((q) => ({
-    name: q.name,
+  const queries: ExtractedQuery[] = model.queries().named.map((q) => ({
+    name: q,
   }));
 
   return {
@@ -201,7 +201,7 @@ function isFieldHidden(field: malloy.Field): boolean {
   const { name, parentExplore } = field;
 
   try {
-    const { tag } = parentExplore.tagParse();
+    const { tag } = parentExplore.annotations.parseAsTag();
     const hiddenStrings =
       tag
         .array("hidden")

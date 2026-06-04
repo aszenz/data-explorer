@@ -1,9 +1,9 @@
 :where(
   *:not(
     /** Exclude library components **/
-    .source-explorer *,
-    :source-explorer-container *::before,
-    :source-explorer-container *::after
+    .source-explorer-container *,
+    .source-explorer-container *::before,
+    .source-explorer-container *::after
   )
 ) {
   margin: 0;

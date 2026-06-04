@@ -106,7 +106,7 @@ function isFieldHidden(field: Field): boolean {
   const { name, parentExplore } = field;
   let hidden = hiddenFields.get(parentExplore);
   if (!hidden) {
-    const { tag } = parentExplore.tagParse();
+    const { tag } = parentExplore.annotations.parseAsTag();
     const strings =
       tag
         .array("hidden")

@@ -21,7 +21,7 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
     duckdbWasmOptions: { name: string; additionalExtensions?: string[] },
     queryOptions: malloy.QueryOptionsReader,
   ) {
-    super({ ...duckdbWasmOptions, motherDuckToken: undefined }, queryOptions);
+    super({ ...duckdbWasmOptions }, queryOptions);
     this.dataFileURLs = dataFileURLs;
   }
 
