@@ -20,7 +20,7 @@
 -- Quantity => Quantity of the Product.
 -- Discount => Discount provided.
 -- Profit => Profit/Loss incurred.
-source: superstore is duckdb.table("hf://datasets/An-j96/SuperstoreData@convert%2fparquet/default/train/0000.parquet") extend {
+source: superstore is duckdb.sql("FROM 'hf://datasets/An-j96/SuperstoreData@convert%2fparquet/default/train/0000.parquet'") extend {
     primary_key: `Row ID`
     measure: tot_quantity is Quantity.sum()
     # number="$0.000,\" K\""

@@ -9,7 +9,9 @@ import llmsTxtPlugin from "./plugins/vite-plugin-llms-txt";
 const config: ReturnType<typeof defineConfig> = defineConfig((({ mode }) => {
   const siteUrl =
     process.env["SITE_URL"] ??
-    (mode === "development" ? "http://localhost:5173" : null);
+    (mode === "development" || mode === "test"
+      ? "http://localhost:5173"
+      : null);
 
   if (null === siteUrl) {
     throw new Error(
@@ -39,11 +41,6 @@ const config: ReturnType<typeof defineConfig> = defineConfig((({ mode }) => {
     },
     define: {
       "process.env": {},
-    },
-    optimizeDeps: {
-      esbuildOptions: {
-        target: "esnext",
-      },
     },
     test: {
       include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],

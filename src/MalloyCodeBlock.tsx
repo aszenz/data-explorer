@@ -24,7 +24,7 @@ async function getHighlighter() {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighterCore({
       themes: [import("@shikijs/themes/light-plus")],
-      langs: [malloyLang as never],
+      langs: [malloyLang],
       engine: createJavaScriptRegexEngine(),
     });
   }

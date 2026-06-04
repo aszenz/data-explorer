@@ -28,7 +28,8 @@ function SourceExplorer(): JSX.Element {
   const routeData = useLoaderData<SourceExplorerLoaderData>();
   const [draftQuery, setDraftQuery] = useState<
     string | MalloyInterface.Query | undefined
-  >();
+  >(routeData.parsedQuery);
+  const [prevParsedQuery, setPrevParsedQuery] = useState(routeData.parsedQuery);
   const [nestViewPath, setNestViewPath] = useState<string[]>([]);
   const [monaco, setMonaco] = useState<typeof Monaco | undefined>();
 
@@ -67,9 +68,10 @@ function SourceExplorer(): JSX.Element {
     [state, routeData.submittedQuery],
   );
 
-  React.useEffect(() => {
+  if (routeData.parsedQuery !== prevParsedQuery) {
+    setPrevParsedQuery(routeData.parsedQuery);
     setDraftQuery(routeData.parsedQuery);
-  }, [routeData.parsedQuery]);
+  }
 
   const codeEditorContextValue = React.useMemo(
     () => ({

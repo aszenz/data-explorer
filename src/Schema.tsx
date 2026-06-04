@@ -7,7 +7,6 @@ import * as React from "react";
 import {
   Explore,
   type Field,
-  type NamedQueryDef,
   type QueryField,
   type Model,
 } from "@malloydata/malloy";
@@ -54,12 +53,12 @@ export type { SchemaRendererProps };
 
 type SchemaRendererProps = {
   explores: Explore[];
-  queries: NamedQueryDef[];
+  queries: string[];
   model?: Model;
   modelCode?: string;
   dataSources?: DataSourceInfo[];
   onFieldClick: (_field: Field) => void | Promise<void>;
-  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>;
+  onQueryClick: (_query: string | QueryField) => void | Promise<void>;
   onPreviewClick: (_explore: Explore) => void | Promise<void>;
   onExploreClick: (_explore: Explore) => void | Promise<void>;
   defaultShow: boolean;
@@ -169,14 +168,16 @@ function SchemaRenderer({
       <div className="schema-tab-content">
         {activeTab === "queries" && hasQueries && (
           <div className="field_list">
-            {queries.sort(sortByName).map((query) => (
-              <QueryItem
-                key={query.name}
-                query={query}
-                path={query.name}
-                onQueryClick={onQueryClick}
-              />
-            ))}
+            {[...queries]
+              .sort((q1, q2) => q1.localeCompare(q2))
+              .map((queryName) => (
+                <QueryItem
+                  key={queryName}
+                  query={queryName}
+                  path={queryName}
+                  onQueryClick={onQueryClick}
+                />
+              ))}
           </div>
         )}
         {activeTab === "code" && modelCode && (
@@ -186,7 +187,7 @@ function SchemaRenderer({
         )}
         {activeTab === "sources" && hasExplores && (
           <ul>
-            {explores.sort(sortByName).map((explore) => (
+            {[...explores].sort(sortByName).map((explore) => (
               <StructItem
                 key={explore.name}
                 explore={explore}
@@ -252,13 +253,14 @@ function FieldItem({ field, path, onFieldClick }: FieldItemProps) {
 }
 
 type QueryItemProps = {
-  query: NamedQueryDef | QueryField;
+  query: string | QueryField;
   path: string;
-  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>;
+  onQueryClick: (_query: string | QueryField) => void | Promise<void>;
 };
 
 function QueryItem({ query, path, onQueryClick }: QueryItemProps) {
-  const title = `${query.name}\nPath: ${path}${path ? "." : ""}${query.name}`;
+  const queryName = typeof query === "string" ? query : query.name;
+  const title = `${queryName}\nPath: ${path}${path ? "." : ""}${queryName}`;
 
   return (
     <button
@@ -268,7 +270,7 @@ function QueryItem({ query, path, onQueryClick }: QueryItemProps) {
     >
       {getIconElement("query", false)}
       <span title={title} className="field_name">
-        {query.name}
+        {queryName}
       </span>
     </button>
   );
@@ -278,7 +280,7 @@ type StructItemProps = {
   explore: Explore;
   path: string;
   onFieldClick: (_field: Field) => void | Promise<void>;
-  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>;
+  onQueryClick: (_query: string | QueryField) => void | Promise<void>;
   onPreviewClick: (_explore: Explore) => void | Promise<void>;
   onExploreClick: (_explore: Explore) => void | Promise<void>;
   startHidden: boolean;
@@ -411,7 +413,7 @@ function StructItem({
 function fieldList(
   fields: Field[],
   path: string,
-  onQueryClick: (_query: NamedQueryDef | QueryField) => void | Promise<void>,
+  onQueryClick: (_query: string | QueryField) => void | Promise<void>,
   onFieldClick: (_field: Field) => void | Promise<void>,
 ) {
   return (

@@ -237,17 +237,17 @@ function QueryBreadcrumb({
   queryName: string;
 }): JSX.Element {
   const { model } = useRuntime();
-  const queries = model.namedQueries;
+  const queries = model.queries();
 
   return (
     <>
       <span className="breadcrumb-separator">/</span>
       <BreadcrumbDropdown
         label={`Query ${queryName}`}
-        items={queries.map((query) => ({
-          name: `Query ${query.name}`,
-          to: `/model/${modelName}/query/${query.name}`,
-          active: query.name === queryName,
+        items={queries.named.map((query) => ({
+          name: `Query ${query}`,
+          to: `/model/${modelName}/query/${query}`,
+          active: query === queryName,
         }))}
         isCurrent
       />

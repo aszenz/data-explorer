@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { parseNotebook, extractNotebookSources } from "../src/notebook-parser";
 
-describe.sequential("parsing notebooks", () => {
+describe("parsing notebooks", { concurrent: false }, () => {
   test("single md cell", () => {
     const sampleNotebook = `>>>markdown
 # Test Notebook
@@ -53,7 +53,7 @@ This is a test notebook with multiple cell types.`,
   });
 });
 
-describe.sequential("extracting notebook sources", () => {
+describe("extracting notebook sources", { concurrent: false }, () => {
   test("extracts named imports with standard formatting", () => {
     const cells = [
       {
