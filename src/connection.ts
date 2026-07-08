@@ -108,8 +108,22 @@ export default class DuckDBConnection extends DuckDBWASMConnection {
     }
     const db = this.database;
 
-    await this.connection.query("install httpfs");
-    await this.connection.query("load httpfs");
+    // httpfs is only required when Malloy-generated SQL references external
+    // URLs (e.g. https://... or hf://...). Locally-registered data files
+    // (csv/parquet/json) are served from DuckDB's virtual filesystem and do
+    // not need it. Installing the extension requires network access to
+    // extensions.duckdb.org, so treat a failure as non-fatal: models backed
+    // by local data files keep working even when that host is unreachable.
+    try {
+      await this.connection.query("install httpfs");
+      await this.connection.query("load httpfs");
+    } catch (error) {
+      console.warn(
+        "Could not install/load the httpfs extension; queries against " +
+          "external URLs will be unavailable. Local data files are unaffected.",
+        error,
+      );
+    }
 
     const entries = Object.entries(this.dataFileURLs);
     console.log(`Registering ${entries.length.toString()} data file URLs`);
