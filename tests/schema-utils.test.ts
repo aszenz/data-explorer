@@ -7,6 +7,8 @@ describe("extractReferencedDataFiles", () => {
   test("extracts table paths from model with single table source", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: ["users"],
       contents: {
         users: createTableSource("users", "duckdb:data/users.parquet"),
@@ -42,6 +44,8 @@ describe("extractReferencedDataFiles", () => {
   test("extracts multiple table paths from model", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: ["users", "products"],
       contents: {
         users: createTableSource("users", "duckdb:data/users.parquet"),
@@ -84,6 +88,8 @@ describe("extractReferencedDataFiles", () => {
   test("handles table paths without duckdb prefix", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: ["users"],
       contents: {
         users: createTableSource("users", "data/users.parquet"),
@@ -113,6 +119,8 @@ describe("extractReferencedDataFiles", () => {
   test("handles table paths with and without data/ prefix", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: ["users"],
       contents: {
         users: createTableSource("users", "users.parquet"),
@@ -142,6 +150,8 @@ describe("extractReferencedDataFiles", () => {
   test("returns empty array when no tables are referenced", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: [],
       contents: {},
       queryList: [],
@@ -168,6 +178,8 @@ describe("extractReferencedDataFiles", () => {
   test("ignores non-table source types", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: ["users", "usersSql"],
       contents: {
         users: createTableSource("users", "duckdb:data/users.parquet"),
@@ -205,6 +217,8 @@ describe("extractReferencedDataFiles", () => {
   test("handles different file types (csv, parquet, json)", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: ["users", "products", "logs"],
       contents: {
         users: createTableSource("users", "data/users.parquet"),
@@ -252,6 +266,8 @@ describe("extractReferencedDataFiles", () => {
   test("matches glob pattern to multiple data files", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: [],
       contents: {
         logs: createTableSource("logs", "duckdb:data/serverlogs/*.csv"),
@@ -302,6 +318,8 @@ describe("extractReferencedDataFiles", () => {
   test("matches ** recursive glob pattern", () => {
     const mockModelDef: ModelDef = {
       name: "test-model",
+      modelID: "test-model",
+      modelAnnotations: {},
       exports: [],
       contents: {
         all_csv: createTableSource("all_csv", "duckdb:data/**/*.csv"),
